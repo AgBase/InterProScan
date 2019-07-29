@@ -74,9 +74,9 @@ COPY --from=buildcore /opt/interproscan /opt/interproscan
 
 WORKDIR /opt/interproscan
 
-COPY ./splitfasta.pl /opt/interproscan
-COPY ./iprs_wrapper.sh /opt/interproscan
-COPY ./cyverse_parse_ips_xml.pl /opt/interproscan
+ADD splitfasta.pl /usr/bin
+ADD iprs_wrapper.sh /usr/bin
+ADD cyverse_parse_ips_xml.pl /usr/bin
 
 
 ENTRYPOINT ["/bin/bash", "iprs_wrapper.sh"]
