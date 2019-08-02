@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/bash
+##/usr/bin/parallel --shebang-wrap /bin/bash
 
 #######################################################################################################
 ##SET UP OPTIONS
@@ -131,17 +132,42 @@ if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 
-##EVERYTHING BELOW HERE IS GOANNA AND NEEDS TO BE CHANGED
 
 ######################################################################################################
 
 ##SPLIT FASTA INTO BLOCKS OF 1000
 
-/usr/bin/splitfasta.pl $inputpath
+#/usr/bin/splitfasta.pl $inputpath
+
+#parallel [ENTER PARALLEL OPTIONS HERE] parallel_wrap.sh ::: $inputpath
+
+/bin/bash  /opt/interproscan/interproscan.sh -i $inputpath $ARGS
+
+################################################################################################################
+###############################################################################################################
+##USEFUL SCRIPT I STOLE FROM THE INTERWEB
+##THIS ASSUMES YOU HAVE ALREADY SPLIT THE FASTA AND THE QSUB JUST RUNS THE COMMAND
+##I WILL NEED TO THINK ABOUT HOW TO MAKE THE SPLITTING AND THE COMMAND BOTH A PART OF THE WRAPPER
+##THEN LAUNCH THE CONTAINER IN THE QSUB SCRIPT
+##USE DOCKER COMPOSE? OR SINGULARITY EQUIVALENT??
+##AN ARRAY JOB WOULD PROCESS THE THE SPLITS BUT NOT DO THE SPLITTING...
+###########
+##GNU PARALLEL AT HPC--DOES THE SPLITTING, PARALLELIZING, RE-ASSEMBLING OUTPUT FOR ME####
+###########
+#!/bin/bash
+#shopt -s nullglob
+#for fasta in $(find `pwd` -type f -name "*.fa" | sort)
+#do
+  # Create your jobscript here.
+  # And the command you should run in your jobscript:
+  # /path/to/interproscan.sh -i $fasta -dp -iprlookup --goterms --pathways
+#done
+
+########################################################################################################
+#########################################################################################################
 
 
-
-
+##EVERYTHING BELOW HERE IS GOANNA AND NEEDS TO BE CHANGED
 
 #if [[ "$experimental" = "yes" ]]; then database="$database"'_exponly'; fi
 #if [[ -z "$experimental" ]]; then database="$database"'_exponly'; fi
