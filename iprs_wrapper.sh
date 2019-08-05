@@ -1,6 +1,4 @@
-#!/usr/bin/bash
-##/usr/bin/parallel --shebang-wrap /bin/bash
-
+#!/usr/bin/parallel --shebang-wrap /bin/bash
 #######################################################################################################
 ##SET UP OPTIONS
 
