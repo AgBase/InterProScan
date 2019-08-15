@@ -19,7 +19,7 @@ my $outdir = './split';
 my $number = 1000;
 
 
-print STDERR "splitfasta.pl -f $fasta -o $outdir -n $number\n";
+print STDERR "splitfasta.pl -f $fasta -o $outdir -r $number\n";
 
 # Redfine the record separator to > for reading FASTA file
 # This is 20x faster than Bio::SeqIO, though probably less
@@ -55,7 +55,7 @@ while (my $rec = <FASTA>) {
             close FOUT;
             
             $file_count++;
-            #print STDERR "Opening new query file $file_count ($count_rec)\n";
+            print STDERR "Opening new query file $file_count ($count_rec)\n";
             $count_rec=0;
             my $fname = $stem . "." . $file_count;
             open (FOUT, ">$outdir/$fname");
