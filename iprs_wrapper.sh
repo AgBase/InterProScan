@@ -1,28 +1,38 @@
-#!/usr/bin/parallel --shebang-wrap /bin/bash
+#!/usr/bin/bash
 #######################################################################################################
 ##SET UP OPTIONS
 
-while getopts a:b:cd:ef:ghi:lm:o:pt:T:v option
+while getopts a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y: option
 do
         case "${option}"
         in
 
                 a) appl=${OPTARG};;
                 b) outfilebase=${OPTARG};;
+		B) badseq=${OPTARG};;
  		c) disableprecalc=true ;;
+		C) cpus=${OPTARG};;
                 d) outdir=${OPTARG};;
+		D) db=${OPTARG};;
 		e) disresanno=true ;;
                 f) outformats=${OPTARG};;
+		F) iprsoutdir=${OPTARG};;
                 g) goterms=true ;;
 		h) help=true ;;
 		i) inputpath=${OPTARG};;
 		l) lookup=true ;;
 		m) minsize=${OPTARG};;
+		M) mapfile=${OPTARG};;
+		n) biocurator=${OPTARG};;
 		o) outfilename=${OPTARG};;
 		p) pathways=true ;;
+		r) mode=${OPTARG};;
+		R) crid=${OPTARG};;
 		t) seqtype=${OPTARG} ;;
 		T) tempdir=${OPTARG};;
 		v) version=true;;
+		x) taxon=${OPTARG};;
+		y) type=${OPTARG};;
         esac
 done
 #####################################################################################################
@@ -46,6 +56,8 @@ if [[ "$help" = "true" ]] ; then
 
  -c		                            Optional.  Disables use of the precalculated match lookup
                                             service.  All match calculations will be run locally.
+
+ -C					    Optional. Supply the number of cpus to use.
 
  -e               			    Optional, excludes sites from the XML, JSON output
 
@@ -105,7 +117,17 @@ Available analyses:
                         PIRSF (X.XX) : The PIRSF concept is being used as a guiding principle to provide comprehensive and non-overlapping clustering of UniProtKB sequences into a hierarchical order to reflect their evolutionary relationships.
                          Pfam (XX.X) : A large collection of protein families, each represented by multiple sequence alignments and hidden Markov models (HMMs)
                         Coils (X.X) : Prediction of Coiled Coil Regions in Proteins
-                   MobiDBLite (X.X) : Prediction of disordered domains Regions in Proteins"
+                   MobiDBLite (X.X) : Prediction of disordered domains Regions in Proteins
+
+OPTIONS FOR XML PARSER OUTPUTS
+
+-F <IPRS output directory> 		This is the output directory from InterProScan.
+-D <database>				Supply the database responsible for these annotations.
+-x <taxon>				NCBI taxon ID of the ID being annotated
+-y <type>				Transcript or protein
+-n <biocurator>				Name of the biocurator who made these annotations
+-M <mapping file>			Optional. Mapping file.
+-B <bad seq file>			Optional. Bad input sequence file." 				
   exit 0
 fi
 #####################################################################################################
@@ -117,11 +139,14 @@ if [ -n "${appl}" ]; then ARGS="$ARGS -appl $appl"; fi
 if [ -n "${outfilebase}" ]; then ARGS="$ARGS -b $outfilebase"; fi
 if [ -n "${outdir}" ]; then ARGS="$ARGS -d $outdir"; fi
 if [ -n "${outformats}" ]; then ARGS="$ARGS -f $outformats"; fi
-if [ -n "${inputpath}" ]; then ARGS="$ARGS -i $inputpath"; fi
+#if [ -n "${inputpath}" ]; then ARGS="$ARGS -i $inputpath"; fi
 if [ -n "${minsize}" ]; then ARGS="$ARGS -ms $minsize"; fi
 if [ -n "${outfilename}" ]; then ARGS="$ARGS -o $outfilename"; fi
 if [ -n "${seqtype}" ]; then ARGS="$ARGS -t $seqtype"; fi
 if [ -n "${tempdir}" ]; then ARGS="$ARGS -T $tempdir"; fi
+if [ -n "${cpus}" ]; then ARGS="$ARGS --cpu $cpus"; fi
+if [ -n "${mode}" ]; then ARGS="$ARGS --mode $mode"; fi
+if [ -n "${crid}" ]; then ARGS="$ARGS --crid $crid"; fi
 if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS -c"; fi
 if [[ "$disresanno" = "true" ]]; then ARGS="$ARGS -dra"; fi
 if [[ "$goterms" = "true" ]]; then ARGS="$ARGS -goterms"; fi
@@ -132,150 +157,43 @@ if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 
 
 ######################################################################################################
-
-##SPLIT FASTA INTO BLOCKS OF 1000
-
-#/usr/bin/splitfasta.pl $inputpath
-
-#parallel [ENTER PARALLEL OPTIONS HERE] parallel_wrap.sh ::: $inputpath
-
-/bin/bash  /opt/interproscan/interproscan.sh -i $inputpath $ARGS
-
-################################################################################################################
-###############################################################################################################
-##USEFUL SCRIPT I STOLE FROM THE INTERWEB
-##THIS ASSUMES YOU HAVE ALREADY SPLIT THE FASTA AND THE QSUB JUST RUNS THE COMMAND
-##I WILL NEED TO THINK ABOUT HOW TO MAKE THE SPLITTING AND THE COMMAND BOTH A PART OF THE WRAPPER
-##THEN LAUNCH THE CONTAINER IN THE QSUB SCRIPT
-##USE DOCKER COMPOSE? OR SINGULARITY EQUIVALENT??
-##AN ARRAY JOB WOULD PROCESS THE THE SPLITS BUT NOT DO THE SPLITTING...
-###########
-##GNU PARALLEL AT HPC--DOES THE SPLITTING, PARALLELIZING, RE-ASSEMBLING OUTPUT FOR ME####
-###########
-#!/bin/bash
-#shopt -s nullglob
-#for fasta in $(find `pwd` -type f -name "*.fa" | sort)
-#do
-  # Create your jobscript here.
-  # And the command you should run in your jobscript:
-  # /path/to/interproscan.sh -i $fasta -dp -iprlookup --goterms --pathways
-#done
-
-########################################################################################################
-#########################################################################################################
+##REMOVE * - _ and . FROM SEQS
+sed 's/*//g' $inputpath > inputnostar.fasta
+sed -i 's/-//g' inputnostar.fasta 
+sed -i  's/_//g' inputnostar.fasta
+sed -i 's/.//g' inputnostar.fasta
 
 
-##EVERYTHING BELOW HERE IS GOANNA AND NEEDS TO BE CHANGED
+##SPLIT FASTA INTO BLOCKS OF 1000?
 
-#if [[ "$experimental" = "yes" ]]; then database="$database"'_exponly'; fi
-#if [[ -z "$experimental" ]]; then database="$database"'_exponly'; fi
-#name="$database"
-#database='agbase_database/'"$database"'.fa'
-#Dbase="$name"'.fa'
+/usr/bin/splitfasta.pl inputnostar.fasta
 
+##RUN IPRS
 
-##MAKE BLAST INDEX
-#test -f "/agbase_database/$Dbase" && makeblastdb -in /agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
-#test -f "agbase_database/$Dbase" && makeblastdb -in agbase_database/$Dbase -dbtype prot -parse_seqids -out $name
-    
-##RUN BLASTP
-#blastp  -query $transcript_peps -db $name -out $out.asn -outfmt 11 $ARGS
+subfiles = find ./split/ -name query* 
+
+for i in ${subfiles[@]}; do
+
+	/opt/interproscan/interproscan.sh -i $i -d $outdir $ARGS
+
+#/bin/bash  /opt/interproscan/interproscan.sh -i inputnostar.fasta -d $outdir $ARGS
 
 
-##MAKE BLAST OUTPUT FORMATS 1 AND 6
-#blast_formatter -archive $out.asn -out $out.html -outfmt 1 -html
-#blast_formatter -archive $out.asn -out $out.tsv -outfmt '6 qseqid qstart qend sseqid sstart send evalue pident qcovs ppos gapopen gaps bitscore score'
-#################################################################################################################
+##MERGE SPLIT OUTPUTS
+##REMOVE HEADERS?
+##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
+cat ./split/query*.tsv > $inputpath.tsv
+cat ./split/query*.xml > $inputpath.xml
+cat ./split/query*.json > $inputpath.json
+cat ./split/query*.gff3 > $inputpath.gff3
+cat ./split/query*.html > $inputpath.html
+cat ./split/query*.svg > $inputpath.svg
 
-##FILTER BALST OUTPUT 6 (OPTIONALLY) BY %ID, QUERY COVERAGE, % POSITIVE ID, BITSCORE, TOTAL GAPS, GAP OPENINGS
-#if [ -z "${perc_ID}" ]; then perc_ID="0"; fi
-#if [ -z "${qcovs}" ]; then qcovs="0"; fi
-#if [ -z "${perc_pos}" ]; then perc_pos="0"; fi
-#if [ -z "${bitscore}" ]; then bitscore="0"; fi
-#if [ -z "${gaps}" ]; then gaps="1000"; fi
-#if [ -z "${gapopen}" ]; then gapopen="100"; fi
-#awk -v x=$percID -v y=$qcovs -v z=$perc_pos -v w=$bitscore -v v=$gaps -v u=$gapopen '{ if(($8 > x) && ($9 > y) && ($10 > z) && ($13 > w) && ($12 < v) && ($11 < u)) { print }}' $out.tsv > tmp.tsv
+##PARSE XML
 
-##CALCULATE QUERY AND SUBJECT LENGTH COLUMNS AND ADD THEM TO OUTPUT 6
-#awk 'BEGIN { OFS = "\t" } {print $1, $3-$2, $2, $3, $4, $6-$5, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14}' tmp.tsv > tmp2.tsv
+#cyverse_parse_ips_xml.pl -f $outdir -d $db -t $taxon -n $biocurator -y $type
 
-##APPEND HEADER LINE TO OUTPUT 6
-#echo -e "Query_ID\tQuery_length\tQuery_start\tQuery_end\tSubject_ID\tSubject_length\tSubject_start\tSubject_end\tE_value\tPercent_ID\tQuery_coverage\tPercent_positive_ID\tGap_openings\tTotal_gaps\tBitscore\tRaw_score" | cat - tmp2.tsv > temp && mv temp $out.tsv
-
-##################################################################################################################
-##PULL COLUMNS 1 AND 5 (QUERY ID AND SUBJECT ID) FOR ALL LINES EXCEPT HEADER
-#tail --lines=+2 $out.tsv | awk -F "\t" '{print $1, $5}' > "blstmp.txt"
-
-##REMOVE THE _ AND EVERYTHING AFTER FROM THE SUBJECT ID SO THAT IT WILL MATCH THE GOA FILE
-#awk 'BEGIN {OFS = "\t"} {sub(/_.*/, "", $2); print $1, $2}'  blstmp.txt > blastids.txt
-
-##MAKE KOABAS ANNOATATE INPUT FILE
-#awk 'BEGIN {OFS = "\t"} {print $2}' blastids.txt | uniq > $out'_KOBAS_annotate_input.txt'
-
-##SPLIT GOA DATABASE INTO SEVERAL TEMP FILES BASED ON THE NUMBER OF ENTRIES
-#if [ ! -d ./splitgoa ]; then mkdir "splitgoa"; fi
-
-#if [[ "$experimental" = "no" ]]
-#then
-#    test -f /go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
-#    test -f ./go_info/gene_association.goa_uniprot && splitB.pl  "/go_info/gene_association.goa_uniprot" "splitgoa"
-#elif [[ "$experimental" != "no" ]]
-#then
-#    test -f /go_info/gene_association_exponly.goa_uniprot && splitB.pl  "/go_info/gene_association_exponly.goa_uniprot" "splitgoa"
-#    test -f ./go_info/gene_association_exponly.goa_uniprot && splitB.pl  "./go_info/gene_association_exponly.goa_uniprot" "splitgoa"
-#fi
-
-###PULL SUBSET OF GOA LINES THAT MATCHED BLAST RESULTS INTO GOA_ENTRIES.TXT
-#cyverse_blast2GO.pl "blastids.txt" "splitgoa"
-
-#OUTGAF VARIABLES COUNT FROM 1 TO CORRESPOND TO THE GAF FILE SPEC
-#THESE WILL ALWAYS BE THE SAME AND CAN BE DECLARED OUTSIDE THE AWK STATEMENT
-
-#outgaf1="user_input_db"
-#outgaf15="user"
-#outgaf13="taxon:0000"
-#outgaf14=$(date +"%Y%m%d")
-#outgaf6="GO_REF:0000024"
-#outgaf7="ECO:0000247"
-#outgaf12="protein"
-#outgaf4=""
-#outgaf11=""
-#outgaf17=""
-#prefix="UniprotKB:"
-
-#THESE ARE OPTIONALLY USER-SPECIFIED DEFAULTS IN LIST ABOVE
-#if [ -n "${gaf_db}" ]; then outgaf1="$gaf_db"; fi
-#if [ -n "${assignedby}" ]; then outgaf15="$assignedby"; fi
-#if [ -n "${gaf_taxid}" ]; then outgaf13="taxon:""$gaf_taxid"; fi
-
-#PULLING COLUMNS FROM BLASTIDS.TXT AND GOA_ENTRIES.TXT AND  PRINTING TO NEW COMBINED FILE GOCOMBO; PULL INFO FROM GOCOMBO_TMP.TXT  AND DECLARED VARIABLES ABOVE TO MAKE GAF OUTPUT
-#awk 'BEGIN {FS = "\t"}{OFS = "\t"} FNR==NR{a[$2]=$1;next}{ print a[$2], $0}' blastids.txt goa_entries.txt > gocombo_tmp.txt
-#awk  -v a="$outgaf1" -v b="$outgaf15" -v c="$outgaf13" -v d="$outgaf14" -v e="$outgaf6" -v f="$outgaf7" -v g="$outgaf12" -v h="$outgaf4" -v i="$outgaf11" -v j="$outgaf17" -v k="$prefix" 'BEGIN {FS = "\t"}{OFS = "\t"}{print a,$1,$1,h,$6,e,f,(k$3),$10,$1,i,g,c,d,b,$18,j}' gocombo_tmp.txt > $out'_goanna_gaf.tsv'
-
-##APPEND HEADER TO GAF OUTPUT
-#sed -i '1 i\!gaf-version: 2.0' $out'_goanna_gaf.tsv'
-
-##PULL COLUMNS FOR GO SLIM FILE
-#awk 'BEGIN {FS ="\t"}{OFS = "\t"} {print $2,$5,$9}' $out'_goanna_gaf.tsv' > $out'_slim_input.txt'
-
-
-
-##REMOVE FILES THAT ARE NO LONGER NECESSARY
-#if [ -s $out'_slim_input.txt' ]
-#then
-#    rm goa_entries.txt
-#    rm -r splitgoa
-#    rm gocombo_tmp.txt
-#    rm blstmp.txt
-#    rm blastids.txt 
-#    rm tmp.tsv
-#    rm tmp2.tsv
-#    rm *.phr
-#    rm *.pin
-#    rm *.pog
-#   rm *.psd
-#    rm *.psi
-#    rm *.psq
-#fi
-
+##REMOVE TEMP FILES
+#rm -r /temp
+#rm inputnostar.fasta
 
