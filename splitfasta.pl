@@ -3,23 +3,24 @@
 use Getopt::Std;
 use IO::File;
 
-#if ($#ARGV < 1) {
+if ($#ARGV < 1) {
 
-#    print STDERR "splitfasta.pl -s query -f myfasta.fa -o directory/ -r 1000", "\n";
-#    print STDERR "  -f: input FASTA\n"; 
-#    print STDERR "  -o: output directory\n"; 
-#    print STDERR "  -s: output prefix\n";
-#    print STDERR "  -r: number of records\n";
-#    exit 1;
-#}
+    print STDERR "splitfasta.pl -s query -f myfasta.fa -o directory/ -r 1000", "\n";
+    print STDERR "  -f: input FASTA\n"; 
+    print STDERR "  -o: output directory\n"; 
+    print STDERR "  -s: output prefix\n";
+    print STDERR "  -r: number of records\n";
+    exit 1;
+}
 
-my $stem   = 'query';
-my $fasta  = $ARGV[0];
-my $outdir = './split';
-my $number = 1000;
+my %opts = ();
+getopts ('s:f:o:r:', \%opts);
+my $stem   = $opts{'s'} || 'query';
+my $fasta  = $opts{'f'};
+my $outdir = $opts{'o'} || '.';
+my $number = $opts{'r'} || 1000;
 
-
-print STDERR "splitfasta.pl -f $fasta -o $outdir -r $number\n";
+print STDERR "splitfasta.pl -f $fasta -o $outdir -n $number\n";
 
 # Redfine the record separator to > for reading FASTA file
 # This is 20x faster than Bio::SeqIO, though probably less
@@ -55,7 +56,7 @@ while (my $rec = <FASTA>) {
             close FOUT;
             
             $file_count++;
-            print STDERR "Opening new query file $file_count ($count_rec)\n";
+            #print STDERR "Opening new query file $file_count ($count_rec)\n";
             $count_rec=0;
             my $fname = $stem . "." . $file_count;
             open (FOUT, ">$outdir/$fname");
@@ -69,3 +70,4 @@ close FOUT;
 $/ = $old_input_rec_sep;
 
 print STDERR "splitfasta DONE\n";
+
