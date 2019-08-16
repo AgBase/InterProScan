@@ -20,7 +20,7 @@ my $fasta  = $opts{'f'};
 my $outdir = $opts{'o'} || '.';
 my $number = $opts{'r'} || 1000;
 
-print STDERR "splitfasta.pl -f $fasta -o $outdir -n $number\n";
+print STDERR "splitfasta.pl -f $fasta -s $stem -o $outdir -n $number\n";
 
 # Redfine the record separator to > for reading FASTA file
 # This is 20x faster than Bio::SeqIO, though probably less

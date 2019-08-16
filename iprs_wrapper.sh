@@ -99,6 +99,7 @@ if [[ "$help" = "true" ]] ; then
 
  -T <TEMP-DIR>                  	    Optional, specify temporary file directory (relative or
                                             absolute path). The default location is temp/.
+
  -v                       		    Optional, display version number
 
 Available analyses:
@@ -155,39 +156,33 @@ if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 
-
 ######################################################################################################
 ##REMOVE * - _ and . FROM SEQS
-sed 's/*//g' $inputpath > inputnostar.fasta
-sed -i 's/-//g' inputnostar.fasta 
-sed -i  's/_//g' inputnostar.fasta
-sed -i 's/.//g' inputnostar.fasta
+sed 's/\*//g' $inputpath > inputnostar.fasta
+sed -i 's/\-//g' inputnostar.fasta 
+sed -i  's/\_//g' inputnostar.fasta
+sed -i 's/\.//g' inputnostar.fasta
 
 
 ##SPLIT FASTA INTO BLOCKS OF 1000?
 
-/usr/bin/splitfasta.pl inputnostar.fasta
+/usr/bin/splitfasta.pl -f inputnostar.fasta -s query -o ./split -r 1000
 
 ##RUN IPRS
+if [ ! -d ./$outdir ]; then mkdir $outdir; fi
 
-subfiles = find ./split/ -name query* 
-
-for i in ${subfiles[@]}; do
-
-	/opt/interproscan/interproscan.sh -i $i -d $outdir $ARGS
-
-#/bin/bash  /opt/interproscan/interproscan.sh -i inputnostar.fasta -d $outdir $ARGS
+parallel -j 0 /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
 
 
 ##MERGE SPLIT OUTPUTS
 ##REMOVE HEADERS?
 ##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
-cat ./split/query*.tsv > $inputpath.tsv
-cat ./split/query*.xml > $inputpath.xml
-cat ./split/query*.json > $inputpath.json
-cat ./split/query*.gff3 > $inputpath.gff3
-cat ./split/query*.html > $inputpath.html
-cat ./split/query*.svg > $inputpath.svg
+#cat ./split/query*.tsv > $outdir/$inputpath.tsv
+#cat ./split/query*.xml > $outdir/$inputpath.xml
+#cat ./split/query*.json > $outdir/$inputpath.json
+#cat ./split/query*.gff3 > $outdir/$inputpath.gff3
+#cat ./split/query*.html > $outdir/$inputpath.html
+#cat ./split/query*.svg > $outdir/$inputpath.svg
 
 ##PARSE XML
 
