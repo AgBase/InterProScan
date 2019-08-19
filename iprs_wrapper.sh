@@ -171,15 +171,16 @@ sed -i 's/\.//g' inputnostar.fasta
 ##RUN IPRS
 if [ ! -d ./$outdir ]; then mkdir $outdir; fi
 
-parallel -j 0 /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
+parallel -j 0  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
 
 
 ##MERGE SPLIT OUTPUTS
 ##REMOVE HEADERS?
 ##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
-#cat ./split/query*.tsv > $outdir/$inputpath.tsv
-#cat ./split/query*.xml > $outdir/$inputpath.xml
+cat ./split/query*.tsv > $outdir/$inputpath.tsv
 #cat ./split/query*.json > $outdir/$inputpath.json
+
+#cat ./split/query*.xml > $outdir/$inputpath.xml
 #cat ./split/query*.gff3 > $outdir/$inputpath.gff3
 #cat ./split/query*.html > $outdir/$inputpath.html
 #cat ./split/query*.svg > $outdir/$inputpath.svg
