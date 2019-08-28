@@ -157,6 +157,8 @@ if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 
 ######################################################################################################
+inname=$(basename "${inputpath}" .fasta) 
+
 ##REMOVE * - _ and . FROM SEQS
 sed 's/\*//g' $inputpath > inputnostar.fasta
 sed -i 's/\-//g' inputnostar.fasta 
@@ -177,19 +179,51 @@ parallel -j 0  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./sp
 ##MERGE SPLIT OUTPUTS
 ##REMOVE HEADERS?
 ##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
-cat ./split/query*.tsv > $outdir/$inputpath.tsv
-#cat ./split/query*.json > $outdir/$inputpath.json
+find ./$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
+find ./$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
 
-#cat ./split/query*.xml > $outdir/$inputpath.xml
-#cat ./split/query*.gff3 > $outdir/$inputpath.gff3
-#cat ./split/query*.html > $outdir/$inputpath.html
-#cat ./split/query*.svg > $outdir/$inputpath.svg
+
+##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
+xmlhead=$(head -n 1 ./$outdir/query.0.xml)
+find ./$outdir  -type f -name "query.[0-9].xml" -exec sed -i '1d' {} \;
+find ./$outdir  -type f -name "query.[0-9].xml" -print0 | xargs -0 cat -- >> $outdir/query.tmp.xml
+echo -e "$xmlhead" | cat - $outdir/query.tmp.xml > $outdir/"$inname"'.xml'
+
+##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
+gff3head=$(head -n 3 ./$outdir/query.[0-9].gff3)
+find ./$outdir  -type f -name "query.[0-9].gff3" -exec sed -i '1,3d' {} \;
+find ./$outdir  -type f -name "query.[0-9].gff3" -print0 | xargs -0 cat -- >> $outdir/query.tmp.gff3
+echo -e "$gff3head" | cat - $outdir/query.tmp.gff3 > $outdir/"$inname"'.gff3'
+
+##CAT TOGETHER
+find ./$outdir  -type f -name "query.[0-9].html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
+find ./$outdir  -type f -name "query.[0-9].svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
+
+rm ./$outdir/query*
 
 ##PARSE XML
+outgaf1="user_input_db"
+outgaf15="user"
+outgaf13="taxon:0000"
+outgaf12="protein"
 
-#cyverse_parse_ips_xml.pl -f $outdir -d $db -t $taxon -n $biocurator -y $type
+#THESE ARE OPTIONALLY USER-SPECIFIED DEFAULTS IN LIST ABOVE
+if [ -n "${db}" ]; then outgaf1="$db"; fi
+if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; fi
+if [ -n "${taxon}" ]; then outgaf13="taxon:""$taxon"; fi
+
+cyverse_parse_ips_xml.pl -f $outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
+
+mv $inname'_acc_go_counts.txt' $outdir
+mv $inname'_acc_interpro_counts.txt' $outdir
+mv $inname'_acc_pathway_counts.txt' $outdir
+mv $inname'.err' $outdir
+mv $inname'_2000_gaf.txt' $outdir
+mv $inname'_go_counts.txt' $outdir
+mv $inname'_interpro_counts.txt' $outdir
+mv $inname'_pathway_counts.txt' $outdir
 
 ##REMOVE TEMP FILES
-#rm -r /temp
-#rm inputnostar.fasta
-
+rm -r ./split
+rm inputnostar.fasta
+rm -r ./temp
