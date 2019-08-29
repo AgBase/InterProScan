@@ -102,6 +102,13 @@ if [[ "$help" = "true" ]] ; then
 
  -v                       		    Optional, display version number
 
+-r					    Optional. 'Mode' required ( -r 'cluster') to run in cluster mode. These options
+					    are provided but have not been tested with this wrapper script. For
+					    more information on running InterProScan in cluster mode: 
+					    https://github.com/ebi-pf-team/interproscan/wiki/ClusterMode
+
+-R					    Optional. Clusterrunid (crid) required when using cluster mode.
+					    -R unique_id 
 Available analyses:
                       TIGRFAM (XX.X) : TIGRFAMs are protein families based on Hidden Markov Models or HMMs
                          SFLD (X.X) : SFLDs are protein families based on Hidden Markov Models or HMMs
@@ -173,31 +180,31 @@ sed -i 's/\.//g' inputnostar.fasta
 ##RUN IPRS
 if [ ! -d ./$outdir ]; then mkdir $outdir; fi
 
-parallel -j 0  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
+parallel -j 2  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
 
 
 ##MERGE SPLIT OUTPUTS
 ##REMOVE HEADERS?
 ##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
-find ./$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
-find ./$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
+find ./$outdir  -type f -name "query.[0-9]+.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
+find ./$outdir  -type f -name "query.[0-9]+.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
 
 
 ##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
 xmlhead=$(head -n 1 ./$outdir/query.0.xml)
-find ./$outdir  -type f -name "query.[0-9].xml" -exec sed -i '1d' {} \;
-find ./$outdir  -type f -name "query.[0-9].xml" -print0 | xargs -0 cat -- >> $outdir/query.tmp.xml
+find ./$outdir  -type f -name "query.[0-9]+.xml" -exec sed -i '1d' {} \;
+find ./$outdir  -type f -name "query.[0-9]+.xml" -print0 | xargs -0 cat -- >> $outdir/query.tmp.xml
 echo -e "$xmlhead" | cat - $outdir/query.tmp.xml > $outdir/"$inname"'.xml'
 
 ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
-gff3head=$(head -n 3 ./$outdir/query.[0-9].gff3)
-find ./$outdir  -type f -name "query.[0-9].gff3" -exec sed -i '1,3d' {} \;
-find ./$outdir  -type f -name "query.[0-9].gff3" -print0 | xargs -0 cat -- >> $outdir/query.tmp.gff3
+gff3head=$(head -n 3 ./$outdir/query.0.gff3)
+find ./$outdir  -type f -name "query.[0-9]+.gff3" -exec sed -i '1,3d' {} \;
+find ./$outdir  -type f -name "query.[0-9]+.gff3" -print0 | xargs -0 cat -- >> $outdir/query.tmp.gff3
 echo -e "$gff3head" | cat - $outdir/query.tmp.gff3 > $outdir/"$inname"'.gff3'
 
 ##CAT TOGETHER
-find ./$outdir  -type f -name "query.[0-9].html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
-find ./$outdir  -type f -name "query.[0-9].svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
+find ./$outdir  -type f -name "query.[0-9]+.html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
+find ./$outdir  -type f -name "query.[0-9]+.svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
 
 rm ./$outdir/query*
 
@@ -218,7 +225,7 @@ mv $inname'_acc_go_counts.txt' $outdir
 mv $inname'_acc_interpro_counts.txt' $outdir
 mv $inname'_acc_pathway_counts.txt' $outdir
 mv $inname'.err' $outdir
-mv $inname'_2000_gaf.txt' $outdir
+mv $inname'_gaf.txt' $outdir
 mv $inname'_go_counts.txt' $outdir
 mv $inname'_interpro_counts.txt' $outdir
 mv $inname'_pathway_counts.txt' $outdir
