@@ -2,7 +2,7 @@
 #######################################################################################################
 ##SET UP OPTIONS
 
-while getopts a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y: option
+while getopts a:b:B:cC:d:D:ef:F:ghi:j:lm:M:n:o:pr:R:t:T:vx:y: option
 do
         case "${option}"
         in
@@ -20,6 +20,7 @@ do
                 g) goterms=true ;;
 		h) help=true ;;
 		i) inputpath=${OPTARG};;
+		j) jobs=${OPTARG};;
 		l) lookup=true ;;
 		m) minsize=${OPTARG};;
 		M) mapfile=${OPTARG};;
@@ -74,6 +75,9 @@ if [[ "$help" = "true" ]] ; then
  -i <INPUT-FILE-PATH>               	    Optional, path to fasta file that should be loaded on
                                             Master startup. Alternatively, in CONVERT mode, the
                                             InterProScan 5 XML file to convert.
+
+-j NUMBER-OF-JOBS>			    Optional. Number of jobs to start per CPU. Default is 2. If set to 0
+					    GNU Parallel will run 'as many jobs as possible' per CPU.
 
  -l                     		    Also include lookup of corresponding InterPro
                                             annotation in the TSV and GFF3 output formats.
@@ -142,12 +146,11 @@ fi
 
 ARGS=''
 
-#IF STATEMENTS EXIST FOR EACH PARAMETER
+#IF STATEMENTS EXIST FOR EACH OPTIONAL PARAMETER
 if [ -n "${appl}" ]; then ARGS="$ARGS -appl $appl"; fi
 if [ -n "${outfilebase}" ]; then ARGS="$ARGS -b $outfilebase"; fi
 if [ -n "${outdir}" ]; then ARGS="$ARGS -d $outdir"; fi
 if [ -n "${outformats}" ]; then ARGS="$ARGS -f $outformats"; fi
-#if [ -n "${inputpath}" ]; then ARGS="$ARGS -i $inputpath"; fi
 if [ -n "${minsize}" ]; then ARGS="$ARGS -ms $minsize"; fi
 if [ -n "${outfilename}" ]; then ARGS="$ARGS -o $outfilename"; fi
 if [ -n "${seqtype}" ]; then ARGS="$ARGS -t $seqtype"; fi
@@ -166,6 +169,9 @@ if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 ######################################################################################################
 inname=$(basename "${inputpath}" .fasta) 
 
+#DEFAULT JOBS TO 2
+if [[ "$jobs" = "false" ]]; then jobs=2; fi
+
 ##REMOVE * - _ and . FROM SEQS
 sed 's/\*//g' $inputpath > inputnostar.fasta
 sed -i 's/\-//g' inputnostar.fasta 
@@ -173,40 +179,41 @@ sed -i  's/\_//g' inputnostar.fasta
 sed -i 's/\.//g' inputnostar.fasta
 
 
-##SPLIT FASTA INTO BLOCKS OF 1000?
+##SPLIT FASTA INTO BLOCKS OF 1000
 
 /usr/bin/splitfasta.pl -f inputnostar.fasta -s query -o ./split -r 1000
 
 ##RUN IPRS
 if [ ! -d ./$outdir ]; then mkdir $outdir; fi
 
-parallel -j 2  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
+parallel -j 0  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
 
 
 ##MERGE SPLIT OUTPUTS
 ##REMOVE HEADERS?
 ##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
-find ./$outdir  -type f -name "query.[0-9]+.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
-find ./$outdir  -type f -name "query.[0-9]+.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
+find ./$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
+find ./$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
 
 
 ##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
 xmlhead=$(head -n 1 ./$outdir/query.0.xml)
-find ./$outdir  -type f -name "query.[0-9]+.xml" -exec sed -i '1d' {} \;
-find ./$outdir  -type f -name "query.[0-9]+.xml" -print0 | xargs -0 cat -- >> $outdir/query.tmp.xml
-echo -e "$xmlhead" | cat - $outdir/query.tmp.xml > $outdir/"$inname"'.xml'
+find ./$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
+find ./$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> $outdir/tmp.xml
+echo -e "$xmlhead" | cat - $outdir/tmp.xml > $outdir/"$inname"'.xml'
 
 ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
 gff3head=$(head -n 3 ./$outdir/query.0.gff3)
-find ./$outdir  -type f -name "query.[0-9]+.gff3" -exec sed -i '1,3d' {} \;
-find ./$outdir  -type f -name "query.[0-9]+.gff3" -print0 | xargs -0 cat -- >> $outdir/query.tmp.gff3
-echo -e "$gff3head" | cat - $outdir/query.tmp.gff3 > $outdir/"$inname"'.gff3'
+find ./$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
+find ./$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> $outdir/tmp.gff3
+echo -e "$gff3head" | cat - $outdir/tmp.gff3 > $outdir/"$inname"'.gff3'
 
 ##CAT TOGETHER
-find ./$outdir  -type f -name "query.[0-9]+.html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
-find ./$outdir  -type f -name "query.[0-9]+.svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
+find ./$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
+find ./$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
 
 rm ./$outdir/query*
+rm ./$outdir/tmp*
 
 ##PARSE XML
 outgaf1="user_input_db"
