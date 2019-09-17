@@ -2,7 +2,7 @@
 #######################################################################################################
 ##SET UP OPTIONS
 
-while getopts a:b:B:cC:d:D:ef:F:ghi:j:lm:M:n:o:pr:R:t:T:vx:y: option
+while getopts a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y: option
 do
         case "${option}"
         in
@@ -20,7 +20,6 @@ do
                 g) goterms=true ;;
 		h) help=true ;;
 		i) inputpath=${OPTARG};;
-		j) jobs=${OPTARG};;
 		l) lookup=true ;;
 		m) minsize=${OPTARG};;
 		M) mapfile=${OPTARG};;
@@ -75,9 +74,6 @@ if [[ "$help" = "true" ]] ; then
  -i <INPUT-FILE-PATH>               	    Optional, path to fasta file that should be loaded on
                                             Master startup. Alternatively, in CONVERT mode, the
                                             InterProScan 5 XML file to convert.
-
--j NUMBER-OF-JOBS>			    Optional. Number of jobs to start per CPU. Default is 2. If set to 0
-					    GNU Parallel will run 'as many jobs as possible' per CPU.
 
  -l                     		    Also include lookup of corresponding InterPro
                                             annotation in the TSV and GFF3 output formats.
@@ -169,8 +165,6 @@ if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 ######################################################################################################
 inname=$(basename "${inputpath}" .fasta) 
 
-#DEFAULT JOBS TO 2
-if [[ "$jobs" = "false" ]]; then jobs=2; fi
 
 ##REMOVE * - _ and . FROM SEQS
 sed 's/\*//g' $inputpath > inputnostar.fasta
@@ -186,7 +180,7 @@ sed -i 's/\.//g' inputnostar.fasta
 ##RUN IPRS
 if [ ! -d ./$outdir ]; then mkdir $outdir; fi
 
-parallel -j 0  /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
+parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./split/query*
 
 
 ##MERGE SPLIT OUTPUTS
