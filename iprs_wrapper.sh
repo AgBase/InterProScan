@@ -210,15 +210,15 @@ rm ./$outdir/query*
 rm ./$outdir/tmp*
 
 ##PARSE XML
-outgaf1="user_input_db"
-outgaf15="user"
-outgaf13="0000"
+#outgaf1="user_input_db"
+#outgaf15="user"
+#outgaf13="0000"
 outgaf12="protein"
 
 #THESE ARE OPTIONALLY USER-SPECIFIED DEFAULTS IN LIST ABOVE
-if [ -n "${db}" ]; then outgaf1="$db"; fi
-if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; fi
-if [ -n "${taxon}" ]; then outgaf13="taxon:""$taxon"; fi
+if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
+if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
+if [ -n "${taxon}" ]; then outgaf13="taxon:""$taxon"; else outgaf13="0000"; fi
 
 cyverse_parse_ips_xml.pl -f $outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
