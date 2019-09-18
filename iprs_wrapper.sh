@@ -212,7 +212,7 @@ rm ./$outdir/tmp*
 ##PARSE XML
 outgaf1="user_input_db"
 outgaf15="user"
-outgaf13="taxon:0000"
+outgaf13="0000"
 outgaf12="protein"
 
 #THESE ARE OPTIONALLY USER-SPECIFIED DEFAULTS IN LIST ABOVE
