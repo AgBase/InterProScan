@@ -184,8 +184,7 @@ parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./
 
 
 ##MERGE SPLIT OUTPUTS
-##REMOVE HEADERS?
-##HOW MANY OUTPUT FORMATS ARE THERE?  TSV, XML, JSON, GFF3, HTML and SVG
+##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
 find ./$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
 find ./$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
 
@@ -202,23 +201,21 @@ find ./$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
 find ./$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> $outdir/tmp.gff3
 echo -e "$gff3head" | cat - $outdir/tmp.gff3 > $outdir/"$inname"'.gff3'
 
-##CAT TOGETHER
+##CAT TOGETHER HTML AND SVG FILES
 find ./$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
 find ./$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
 
+#REMOVE TEMPORARY FILES
 rm ./$outdir/query*
 rm ./$outdir/tmp*
 
 ##PARSE XML
-#outgaf1="user_input_db"
-#outgaf15="user"
-#outgaf13="0000"
 outgaf12="protein"
 
-#THESE ARE OPTIONALLY USER-SPECIFIED DEFAULTS IN LIST ABOVE
+#THESE ARE OPTIONALLY USER-SPECIFIED--DEFAULTS IN LIST ABOVE
 if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
 if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
-if [ -n "${taxon}" ]; then outgaf13="taxon:""$taxon"; else outgaf13="0000"; fi
+if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
 cyverse_parse_ips_xml.pl -f $outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
