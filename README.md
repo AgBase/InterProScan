@@ -1,3 +1,3 @@
 # InterProScan
 
-This is a readme file. This will contain links to documentation for this tool shortly.
+Documentation for the version of InterProScan is hosted by ReadtheDocs: https://agbase-docs.readthedocs.io/en/latest/ . 
