@@ -62,21 +62,29 @@ RUN mkdir -p /opt/interproscan/data
 RUN mkdir -p /data
 
 RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y \
+    apt-get upgrade -y
+
+RUN apt-get install -y software-properties-common
+
+# repo for openjdk-11 as only 8 is available by default
+RUN add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update
+
+RUN apt-get install -y \
         parallel \
-        openjdk-8-jre   \
+        openjdk-11-jre   \
         build-essential \
         pkg-config      \
         python3         \
         bzip2           \
-	libdw1 \
-	nano \
+	      libdw1 \
+        nano \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
+RUN java -version
 
 WORKDIR /opt/interproscan
 
