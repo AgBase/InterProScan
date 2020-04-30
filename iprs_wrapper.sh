@@ -4,38 +4,38 @@
 
 while getopts a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y: option
 do
-        case "${option}"
-        in
-
-                a) appl=${OPTARG};;
-                b) outfilebase=${OPTARG};;
-		B) badseq=${OPTARG};;
- 		c) disableprecalc=true ;;
-		C) cpus=${OPTARG};;
-                d) outdir=${OPTARG};;
-		D) db=${OPTARG};;
-		e) disresanno=true ;;
-                f) outformats=${OPTARG};;
-		F) iprsoutdir=${OPTARG};;
-                g) goterms=true ;;
-		h) help=true ;;
-		i) inputpath=${OPTARG};;
-		l) lookup=true ;;
-		m) minsize=${OPTARG};;
-		M) mapfile=${OPTARG};;
-		n) biocurator=${OPTARG};;
-		o) outfilename=${OPTARG};;
-		p) pathways=true ;;
-		r) mode=${OPTARG};;
-		R) crid=${OPTARG};;
-		t) seqtype=${OPTARG} ;;
-		T) tempdir=${OPTARG};;
-		v) version=true;;
-		x) taxon=${OPTARG};;
-		y) type=${OPTARG};;
-        esac
+    case "${option}"
+    in
+      a) appl=${OPTARG};;
+      b) outfilebase=${OPTARG};;
+  		B) badseq=${OPTARG};;
+   		c) disableprecalc=true ;;
+  		C) cpus=${OPTARG};;
+      d) outdir=${OPTARG};;
+  		D) db=${OPTARG};;
+  		e) disresanno=true ;;
+      f) outformats=${OPTARG};;
+  		F) iprsoutdir=${OPTARG};;
+      g) goterms=true ;;
+  		h) help=true ;;
+  		i) inputpath=${OPTARG};;
+  		l) lookup=true ;;
+  		m) minsize=${OPTARG};;
+  		M) mapfile=${OPTARG};;
+  		n) biocurator=${OPTARG};;
+  		o) outfilename=${OPTARG};;
+  		p) pathways=true ;;
+  		r) mode=${OPTARG};;
+  		R) crid=${OPTARG};;
+  		t) seqtype=${OPTARG} ;;
+  		T) tempdir=${OPTARG};;
+  		v) version=true;;
+  		x) taxon=${OPTARG};;
+  		y) type=${OPTARG};;
+    esac
 done
 #####################################################################################################
+
 if [[ "$help" = "true" ]] ; then
   echo "Options:
  -a  <ANALYSES>			            Optional, comma separated list of analyses.  If this option
