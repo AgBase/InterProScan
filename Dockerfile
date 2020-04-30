@@ -71,8 +71,8 @@ RUN apt-get update && \
         pkg-config      \
         python3         \
         bzip2           \
-	libdw1 \
-	nano \
+        libdw1          \
+        nano \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
