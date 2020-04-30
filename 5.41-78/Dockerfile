@@ -64,21 +64,22 @@ RUN mkdir -p /data
 RUN apt-get update && \
     apt-get upgrade -y
 
+# needed for add-apt-repository
 RUN apt-get install -y software-properties-common
 
 # repo for openjdk-11 as only 8 is available by default
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update
 
-RUN apt-get install -y \
-        parallel \
-        openjdk-11-jre   \
+RUN apt-get install -y  \
+        parallel        \
+        openjdk-11-jre  \
         build-essential \
         pkg-config      \
         python3         \
         bzip2           \
-	      libdw1 \
-        nano \
+	libdw1          \
+        nano            \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
