@@ -62,20 +62,20 @@ COPY --from=buildcore /opt/interproscan /opt/interproscan
 RUN mkdir -p /opt/interproscan/data
 RUN mkdir -p /data
 
-RUN apt-get update &&     \
+RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y    \
-      parallel            \
-      openjdk-8-jre       \
-      build-essential     \
-      pkg-config          \
-      python3             \
-      bzip2               \
-      libdw1              \
-      nano                \
-      ca-certificates &&  \
-    apt-get clean &&      \
-    apt-get purge &&      \
+    apt-get install -y \
+        parallel \
+        openjdk-8-jre   \
+        build-essential \
+        pkg-config      \
+        python3         \
+        bzip2           \
+	libdw1 \
+	nano \
+        ca-certificates && \
+    apt-get clean && \
+    apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 

@@ -4,11 +4,11 @@
 
 FROM busybox AS buildcore
 
-MAINTAINER Amanda Cooksey <amandamcooksey@gmail.com>
+MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 
 ARG IPR=5
 ENV IPR $IPR
-ARG IPRSCAN=5.36-75.0
+ARG IPRSCAN=5.41-78.0
 ENV IPRSCAN $IPRSCAN
 
 RUN mkdir -p /opt/interproscan/bin/blast/ncbi-blast-2.9.0+
@@ -17,7 +17,6 @@ RUN mkdir -p /opt/interproscan/bin/interproscan
 
 RUN wget -O /opt/interproscan-core-$IPRSCAN.tar.gz ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/$IPR/$IPRSCAN/alt/interproscan-core-$IPRSCAN.tar.gz
 RUN wget -O /opt/interproscan-core-$IPRSCAN.tar.gz.md5 ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/$IPR/$IPRSCAN/alt/interproscan-core-$IPRSCAN.tar.gz.md5
-
 
 WORKDIR /opt
 
@@ -43,10 +42,10 @@ RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blas
 
 FROM ubuntu:16.04
 
-MAINTAINER Amanda Cooksey <amandamcooksey@gmail.com>
+MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 LABEL  base_image="ubuntu:16.04" \
        software="interproscan" \
-       software.version="5.36-75.0" \
+       software.version="5.41-78.0" \
        version="1" \
        about.summary="Scan sequences against the InterPro protein signature databases." \
        about.home="https://www.ebi.ac.uk/interpro/interproscan.html" \
@@ -62,22 +61,31 @@ COPY --from=buildcore /opt/interproscan /opt/interproscan
 RUN mkdir -p /opt/interproscan/data
 RUN mkdir -p /data
 
-RUN apt-get update &&     \
-    apt-get upgrade -y && \
-    apt-get install -y    \
-      parallel            \
-      openjdk-8-jre       \
-      build-essential     \
-      pkg-config          \
-      python3             \
-      bzip2               \
-      libdw1              \
-      nano                \
-      ca-certificates &&  \
-    apt-get clean &&      \
-    apt-get purge &&      \
+RUN apt-get update && \
+    apt-get upgrade -y
+
+# needed for add-apt-repository
+RUN apt-get install -y software-properties-common
+
+# repo for openjdk-11 as only 8 is available by default
+RUN add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update
+
+RUN apt-get install -y  \
+        parallel        \
+        openjdk-11-jre  \
+        build-essential \
+        pkg-config      \
+        python3         \
+        bzip2           \
+	libdw1          \
+        nano            \
+        ca-certificates && \
+    apt-get clean && \
+    apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
+RUN java -version
 
 WORKDIR /opt/interproscan
 
