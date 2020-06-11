@@ -165,8 +165,11 @@ if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 ######################################################################################################
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
 
+##SUBSTITUTE THE FASTA HEADERS WITH FAKE HEADERS AS SPECIAL CHARACTERS ARE TRIMMED BY IPRS
+awk '/^>/{print ">" ++i > "/data/input.fasta"; print > "/data/input.fasta.headers"; next} {print > "/data/input.fasta"}' < /data/$inputpath
+
 ##REMOVE * - _ and . FROM SEQS
-sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
+sed 's/\*//g' /data/input.fasta > /data/inputnostar.fasta
 sed -i 's/\-//g' /data/inputnostar.fasta 
 sed -i  's/\_//g' /data/inputnostar.fasta
 sed -i 's/\.//g' /data/inputnostar.fasta
@@ -185,6 +188,8 @@ parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS 
 ##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
 find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
 find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
+##RENAME FASTA HEADERS
+TODO
 
 
 ##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
