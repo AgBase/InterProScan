@@ -197,16 +197,22 @@ xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
 find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
 find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
 echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+##RENAME FASTA HEADERS
+TODO
 
 ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
 gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
 find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
 find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
+##RENAME FASTA HEADERS
+TODO
 
 ##CAT TOGETHER HTML AND SVG FILES
 find /data/$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.html.tar.gz'
 find /data/$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.svg.tar.gz'
+##RENAME FASTA HEADERS
+TODO
 
 #REMOVE TEMPORARY FILES
 rm /data/$outdir/query*
