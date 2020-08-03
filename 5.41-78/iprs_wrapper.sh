@@ -175,10 +175,25 @@ sed -i 's/\.//g' /data/inputnostar.fasta
 ##SPLIT FASTA INTO BLOCKS OF 1000
 /usr/bin/splitfasta.pl -f /data/inputnostar.fasta -s query -o /data/split -r 1000
 
+#INPUT 1 breakpoint
+echo "After splitFasta.pl\nEnter value1: "
+read value1
+echo "Typed value: $value1"
+
 ##RUN IPRS
 if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
 
+#INPUT 2 breakpoint
+echo "After mkdir\nEnter value2: "
+read value2
+echo "Typed value: $value2"
+
 parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query*
+
+#INPUT 3 breakpoint
+echo "After parallel IPRS run\nEnter value3: "
+read value3
+echo "Typed value: $value3"
 
 
 ##MERGE SPLIT OUTPUTS
@@ -187,11 +202,23 @@ find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /da
 find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
 
 
+#INPUT 4 breakpoint
+echo "After concatenating TSV JSON\nparallel IPRS run\nEnter value3: "
+read value4
+echo "Typed value: $value4"
+
 ##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
 xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
 find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
 find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
 echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+
+
+#INPUT 5 breakpoint
+echo "After concatenating XML\nEnter value5: "
+read value5
+echo "Typed value: $value5"
+
 
 ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
 gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
@@ -199,9 +226,21 @@ find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
 find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
 
+#INPUT 6 breakpoint
+echo "After concatenating GFF\nEnter value5: "
+read value6
+echo "Typed value: $value6"
+
+
 ##CAT TOGETHER HTML AND SVG FILES
 find /data/$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.html.tar.gz'
 find /data/$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.svg.tar.gz'
+
+#INPUT 7 breakpoint
+echo "After concatenating HTML and SVG\nEnter value5: "
+read value7
+echo "Typed value: $value7"
+
 
 #REMOVE TEMPORARY FILES
 rm /data/$outdir/query*
@@ -230,3 +269,4 @@ mv $inname'_pathway_counts.txt' /data/$outdir
 rm -r /data/split
 rm /data/inputnostar.fasta
 rm -r temp
+
