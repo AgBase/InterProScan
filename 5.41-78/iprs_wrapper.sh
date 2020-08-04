@@ -183,56 +183,56 @@ if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
 parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query*
 
 
-# ##MERGE SPLIT OUTPUTS
-# ##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
-# find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
-# find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
+##MERGE SPLIT OUTPUTS
+##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
+find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
+find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
 
 
-# ##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
-# xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
-# find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
-# find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
-# echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
+xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
+find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
+find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
+echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
 
 
-# ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
-# gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
-# find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
-# find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
-# echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
+##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
+gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
+find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
+find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
+echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
 
 
-# ##CAT TOGETHER HTML AND SVG FILES
-# find /data/$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.html.tar.gz'
-# find /data/$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.svg.tar.gz'
+##CAT TOGETHER HTML AND SVG FILES
+find /data/$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.html.tar.gz'
+find /data/$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.svg.tar.gz'
 
 
-# #REMOVE TEMPORARY FILES
-# rm /data/$outdir/query*
-# rm /data/$outdir/tmp*
+#REMOVE TEMPORARY FILES
+rm /data/$outdir/query*
+rm /data/$outdir/tmp*
 
-# ##PARSE XML
-# outgaf12="protein"
+##PARSE XML
+outgaf12="protein"
 
-# #THESE ARE OPTIONALLY USER-SPECIFIED--DEFAULTS IN LIST ABOVE
-# if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
-# if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
-# if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
+#THESE ARE OPTIONALLY USER-SPECIFIED--DEFAULTS IN LIST ABOVE
+if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
+if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
+if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
-# cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
+cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
-# mv $inname'_acc_go_counts.txt' /data/$outdir
-# mv $inname'_acc_interpro_counts.txt' /data/$outdir
-# mv $inname'_acc_pathway_counts.txt' /data/$outdir
-# mv $inname'.err' /data/$outdir
-# mv $inname'_gaf.txt' /data/$outdir
-# mv $inname'_go_counts.txt' /data/$outdir
-# mv $inname'_interpro_counts.txt' /data/$outdir
-# mv $inname'_pathway_counts.txt' /data/$outdir
+mv $inname'_acc_go_counts.txt' /data/$outdir
+mv $inname'_acc_interpro_counts.txt' /data/$outdir
+mv $inname'_acc_pathway_counts.txt' /data/$outdir
+mv $inname'.err' /data/$outdir
+mv $inname'_gaf.txt' /data/$outdir
+mv $inname'_go_counts.txt' /data/$outdir
+mv $inname'_interpro_counts.txt' /data/$outdir
+mv $inname'_pathway_counts.txt' /data/$outdir
 
-# ##REMOVE TEMP FILES
-# rm -r /data/split
-# rm /data/inputnostar.fasta
-# rm -r temp
+##REMOVE TEMP FILES
+rm -r /data/split
+rm /data/inputnostar.fasta
+rm -r temp
 
