@@ -165,108 +165,74 @@ if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 ######################################################################################################
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
 
-##REMOVE * - _ and . FROM SEQS
-sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
-sed -i 's/\-//g' /data/inputnostar.fasta 
-sed -i  's/\_//g' /data/inputnostar.fasta
-sed -i 's/\.//g' /data/inputnostar.fasta
+##REMOVE BAD CHARACTERS * - _ . FROM SEQS
+# sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
+# sed -i 's/\-//g' /data/inputnostar.fasta 
+# sed -i  's/\_//g' /data/inputnostar.fasta
+# sed -i 's/\.//g' /data/inputnostar.fasta
+while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE| sed -e 's/\*//g' -e 's/\-//g' -e 's/\_//g' -e 's/\.//g'; fi;  done < /data/$inputpath > /data/inputnostar.fasta
 
 
 ##SPLIT FASTA INTO BLOCKS OF 1000
 /usr/bin/splitfasta.pl -f /data/inputnostar.fasta -s query -o /data/split -r 1000
 
-#INPUT 1 breakpoint
-echo "After splitFasta.pl\nEnter value1: "
-read value1
-echo "Typed value: $value1"
-
 ##RUN IPRS
 if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
 
-#INPUT 2 breakpoint
-echo "After mkdir\nEnter value2: "
-read value2
-echo "Typed value: $value2"
 
 parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query*
 
-#INPUT 3 breakpoint
-echo "After parallel IPRS run\nEnter value3: "
-read value3
-echo "Typed value: $value3"
+
+# ##MERGE SPLIT OUTPUTS
+# ##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
+# find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
+# find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
 
 
-##MERGE SPLIT OUTPUTS
-##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
-find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
-find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
+# ##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
+# xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
+# find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
+# find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
+# echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
 
 
-#INPUT 4 breakpoint
-echo "After concatenating TSV JSON\nparallel IPRS run\nEnter value3: "
-read value4
-echo "Typed value: $value4"
-
-##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
-xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
-find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
-find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
-echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+# ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
+# gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
+# find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
+# find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
+# echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
 
 
-#INPUT 5 breakpoint
-echo "After concatenating XML\nEnter value5: "
-read value5
-echo "Typed value: $value5"
+# ##CAT TOGETHER HTML AND SVG FILES
+# find /data/$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.html.tar.gz'
+# find /data/$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.svg.tar.gz'
 
 
-##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
-gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
-find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
-find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
-echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
+# #REMOVE TEMPORARY FILES
+# rm /data/$outdir/query*
+# rm /data/$outdir/tmp*
 
-#INPUT 6 breakpoint
-echo "After concatenating GFF\nEnter value5: "
-read value6
-echo "Typed value: $value6"
+# ##PARSE XML
+# outgaf12="protein"
 
+# #THESE ARE OPTIONALLY USER-SPECIFIED--DEFAULTS IN LIST ABOVE
+# if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
+# if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
+# if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
-##CAT TOGETHER HTML AND SVG FILES
-find /data/$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.html.tar.gz'
-find /data/$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.svg.tar.gz'
+# cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
-#INPUT 7 breakpoint
-echo "After concatenating HTML and SVG\nEnter value5: "
-read value7
-echo "Typed value: $value7"
+# mv $inname'_acc_go_counts.txt' /data/$outdir
+# mv $inname'_acc_interpro_counts.txt' /data/$outdir
+# mv $inname'_acc_pathway_counts.txt' /data/$outdir
+# mv $inname'.err' /data/$outdir
+# mv $inname'_gaf.txt' /data/$outdir
+# mv $inname'_go_counts.txt' /data/$outdir
+# mv $inname'_interpro_counts.txt' /data/$outdir
+# mv $inname'_pathway_counts.txt' /data/$outdir
 
-
-#REMOVE TEMPORARY FILES
-rm /data/$outdir/query*
-rm /data/$outdir/tmp*
-
-##PARSE XML
-outgaf12="protein"
-
-#THESE ARE OPTIONALLY USER-SPECIFIED--DEFAULTS IN LIST ABOVE
-if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
-if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
-if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
-
-cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
-
-mv $inname'_acc_go_counts.txt' /data/$outdir
-mv $inname'_acc_interpro_counts.txt' /data/$outdir
-mv $inname'_acc_pathway_counts.txt' /data/$outdir
-mv $inname'.err' /data/$outdir
-mv $inname'_gaf.txt' /data/$outdir
-mv $inname'_go_counts.txt' /data/$outdir
-mv $inname'_interpro_counts.txt' /data/$outdir
-mv $inname'_pathway_counts.txt' /data/$outdir
-
-##REMOVE TEMP FILES
-rm -r /data/split
-rm /data/inputnostar.fasta
-rm -r temp
+# ##REMOVE TEMP FILES
+# rm -r /data/split
+# rm /data/inputnostar.fasta
+# rm -r temp
 

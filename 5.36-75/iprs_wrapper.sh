@@ -165,11 +165,12 @@ if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 ######################################################################################################
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
 
-##REMOVE * - _ and . FROM SEQS
-sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
-sed -i 's/\-//g' /data/inputnostar.fasta 
-sed -i  's/\_//g' /data/inputnostar.fasta
-sed -i 's/\.//g' /data/inputnostar.fasta
+##REMOVE BAD CHARACTERS * - _ . FROM SEQS
+# sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
+# sed -i 's/\-//g' /data/inputnostar.fasta 
+# sed -i  's/\_//g' /data/inputnostar.fasta
+# sed -i 's/\.//g' /data/inputnostar.fasta
+while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE| sed -e 's/\*//g' -e 's/\-//g' -e 's/\_//g' -e 's/\.//g'; fi;  done < /data/$inputpath > /data/inputnostar.fasta
 
 
 ##SPLIT FASTA INTO BLOCKS OF 1000
