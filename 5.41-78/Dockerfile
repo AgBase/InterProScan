@@ -6,6 +6,9 @@ FROM busybox AS buildcore
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 
+MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
+MAINTAINER Surya Saha <suryasaha@arizona.edu>
+
 ARG IPR=5
 ENV IPR $IPR
 ARG IPRSCAN=5.41-78.0
@@ -43,6 +46,9 @@ RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blas
 FROM ubuntu:16.04
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
+MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
+MAINTAINER Surya Saha <suryasaha@arizona.edu>
+
 LABEL  base_image="ubuntu:16.04" \
        software="interproscan" \
        software.version="5.41-78.0" \
