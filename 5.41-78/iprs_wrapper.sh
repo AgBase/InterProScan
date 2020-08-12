@@ -2,39 +2,40 @@
 #######################################################################################################
 ##SET UP OPTIONS
 
-while getopts a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y: option
-do
-  case "${option}"
-    in
 
+while getopts 'a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y:' option
+do
+  case "${option}" in
     a) appl=${OPTARG};;
     b) outfilebase=${OPTARG};;
     B) badseq=${OPTARG};;
-    c) disableprecalc=true ;;
+    c) disableprecalc=true;;
     C) cpus=${OPTARG};;
     d) outdir=${OPTARG};;
     D) db=${OPTARG};;
     e) disresanno=true ;;
     f) outformats=${OPTARG};;
     F) iprsoutdir=${OPTARG};;
-    g) goterms=true ;;
-    h) help=true ;;
+    g) goterms=true;;
+    h) help=true;;
     i) inputpath=${OPTARG};;
-    l) lookup=true ;;
+    l) lookup=true;;
     m) minsize=${OPTARG};;
     M) mapfile=${OPTARG};;
     n) biocurator=${OPTARG};;
     o) outfilename=${OPTARG};;
-    p) pathways=true ;;
+    p) pathways=true;;
     r) mode=${OPTARG};;
     R) crid=${OPTARG};;
-    t) seqtype=${OPTARG} ;;
+    t) seqtype=${OPTARG};;
     T) tempdir=${OPTARG};;
     v) version=true;;
     x) taxon=${OPTARG};;
     y) type=${OPTARG};;
 esac
 done
+
+
 #####################################################################################################
 if [[ "$help" = "true" ]] ; then
   echo "Options:
@@ -146,21 +147,29 @@ ARGS=''
 if [ -n "${appl}" ]; then ARGS="$ARGS -appl $appl"; fi
 if [ -n "${outfilebase}" ]; then ARGS="$ARGS -b $outfilebase"; fi
 if [ -n "${outdir}" ]; then ARGS="$ARGS -d $outdir"; fi
+#if [ -n "${outdir}" ]; then echo "outdir $outdir"; ARGS="$ARGS -d $outdir"; fi
 if [ -n "${outformats}" ]; then ARGS="$ARGS -f $outformats"; fi
+#if [ -n "${outformats}" ]; then echo "outformats $outformats"; ARGS="$ARGS -f $outformats"; fi
 if [ -n "${minsize}" ]; then ARGS="$ARGS -ms $minsize"; fi
 if [ -n "${outfilename}" ]; then ARGS="$ARGS -o $outfilename"; fi
 if [ -n "${seqtype}" ]; then ARGS="$ARGS -t $seqtype"; fi
 if [ -n "${tempdir}" ]; then ARGS="$ARGS -T $tempdir"; fi
 if [ -n "${cpus}" ]; then ARGS="$ARGS --cpu $cpus"; fi
+#if [ -n "${cpus}" ]; then echo "cpus $cpus"; ARGS="$ARGS --cpu $cpus"; fi
 if [ -n "${mode}" ]; then ARGS="$ARGS --mode $mode"; fi
 if [ -n "${crid}" ]; then ARGS="$ARGS --crid $crid"; fi
 if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS -c"; fi
 if [[ "$disresanno" = "true" ]]; then ARGS="$ARGS -dra"; fi
 if [[ "$goterms" = "true" ]]; then ARGS="$ARGS -goterms"; fi
+#if [[ "$goterms" = "true" ]]; then echo "goterms $goterms"; ARGS="$ARGS -goterms"; fi
 if [[ "$help" = "true" ]]; then ARGS="$ARGS -help"; fi
 if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
+#if [[ "$lookup" = "true" ]]; then echo "lookup $lookup"; ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
+#if [[ "$pathways" = "true" ]]; then echo "pathways $pathways"; ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
+
+echo "Arguments for InterProScan: ${ARGS}\n\n"
 
 ######################################################################################################
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
@@ -176,15 +185,18 @@ while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE
 ##SPLIT FASTA INTO BLOCKS OF 1000
 /usr/bin/splitfasta.pl -f /data/inputnostar.fasta -s query -o /data/split -r 1000
 
+##PRINT NUMBER OF SEQS IN EACH SPLIT
+echo "Number of sequences in each split fasta file"
+grep -c '^>' /data/split/query*
+
 ##RUN IPRS
 if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
-
 
 parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query*
 
 
 ##MERGE SPLIT OUTPUTS
-##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
+##ASSUMING OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
 find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
 find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
 
@@ -220,6 +232,8 @@ if [ -n "${db}" ]; then outgaf1="$db"; else outgaf1="user_input_db"; fi
 if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
 if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
+
+echo "Parameters for cyverse_parse_ips_xml.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
 cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
 mv $inname'_acc_go_counts.txt' /data/$outdir
