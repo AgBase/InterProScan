@@ -13,6 +13,17 @@ check_argument(){
     fi
 }
 
+##CHECK IF PARAMETER IS PASSED A CORRECT ARGUMENT OR THE NEXT PARAMETER DUE TO MISSING FILE NAME
+check_argument(){
+    # pass parameter and argument
+    if [[ "$2" = -* ]] 
+    then
+        echo "Missing argument for parameter -$1"
+        echo "$2 looks like another parameter and not the expected value. Please review help (run with -h) and do not use filenames starting with a '-' character"
+        exit 1
+    fi
+}
+
 while getopts 'a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y:' option
 do
   case "${option}" in
@@ -44,6 +55,7 @@ do
     y) check_argument 'y' ${OPTARG}; type=${OPTARG};;
 esac
 done
+
 
 
 #####################################################################################################
@@ -157,26 +169,20 @@ ARGS=''
 if [ -n "${appl}" ]; then ARGS="$ARGS -appl $appl"; fi
 if [ -n "${outfilebase}" ]; then ARGS="$ARGS -b $outfilebase"; fi
 if [ -n "${outdir}" ]; then ARGS="$ARGS -d $outdir"; fi
-#if [ -n "${outdir}" ]; then echo "outdir $outdir"; ARGS="$ARGS -d $outdir"; fi
 if [ -n "${outformats}" ]; then ARGS="$ARGS -f $outformats"; fi
-#if [ -n "${outformats}" ]; then echo "outformats $outformats"; ARGS="$ARGS -f $outformats"; fi
 if [ -n "${minsize}" ]; then ARGS="$ARGS -ms $minsize"; fi
 if [ -n "${outfilename}" ]; then ARGS="$ARGS -o $outfilename"; fi
 if [ -n "${seqtype}" ]; then ARGS="$ARGS -t $seqtype"; fi
 if [ -n "${tempdir}" ]; then ARGS="$ARGS -T $tempdir"; fi
 if [ -n "${cpus}" ]; then ARGS="$ARGS --cpu $cpus"; fi
-#if [ -n "${cpus}" ]; then echo "cpus $cpus"; ARGS="$ARGS --cpu $cpus"; fi
 if [ -n "${mode}" ]; then ARGS="$ARGS --mode $mode"; fi
 if [ -n "${crid}" ]; then ARGS="$ARGS --crid $crid"; fi
 if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS -c"; fi
 if [[ "$disresanno" = "true" ]]; then ARGS="$ARGS -dra"; fi
 if [[ "$goterms" = "true" ]]; then ARGS="$ARGS -goterms"; fi
-#if [[ "$goterms" = "true" ]]; then echo "goterms $goterms"; ARGS="$ARGS -goterms"; fi
 if [[ "$help" = "true" ]]; then ARGS="$ARGS -help"; fi
 if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
-#if [[ "$lookup" = "true" ]]; then echo "lookup $lookup"; ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
-#if [[ "$pathways" = "true" ]]; then echo "pathways $pathways"; ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 
 echo "Arguments for InterProScan: ${ARGS}\n\n"
