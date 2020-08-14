@@ -5,6 +5,8 @@
 FROM busybox AS buildcore
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
+MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
+MAINTAINER Surya Saha <suryasaha@arizona.edu>
 
 ARG IPR=5
 ENV IPR $IPR
@@ -43,9 +45,11 @@ RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blas
 FROM ubuntu:16.04
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
+MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
+MAINTAINER Surya Saha <suryasaha@arizona.edu>
 LABEL  base_image="ubuntu:16.04" \
        software="interproscan" \
-       software.version="5.41-78.0" \
+       software.version="5.45-80.0" \
        version="1" \
        about.summary="Scan sequences against the InterPro protein signature databases." \
        about.home="https://www.ebi.ac.uk/interpro/interproscan.html" \
@@ -78,7 +82,7 @@ RUN apt-get install -y  \
         pkg-config      \
         python3         \
         bzip2           \
-	libdw1          \
+	      libdw1          \
         nano            \
         ca-certificates && \
     apt-get clean && \
