@@ -17,8 +17,17 @@ check_argument(){
 ## Exit if no params passed
 if [ "$#" == 0 ]
 then
-  echo "No parameters were passed. Please run with -h parameter to see help"
+  echo "No parameters were passed"
+  echo "Please run with -h parameter to see help"
   exit 1
+fi
+
+## Exit if illegal parameter passed
+if [[ "$@" != -* ]]
+then
+    echo "$@ looks like a illegal parameter. All parameters start with -"
+    echo "Please run with -h parameter to see help"
+    exit 1
 fi
 
 while getopts 'a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y:' option
@@ -50,6 +59,7 @@ do
     v) version=true;;
     x) check_argument 'x' ${OPTARG}; taxon=${OPTARG};;
     y) check_argument 'y' ${OPTARG}; type=${OPTARG};;
+    \?) echo "No legal parameters were passed. Please run with -h parameter to see help"; exit 1;;
 esac
 done
 
