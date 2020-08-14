@@ -2,39 +2,67 @@
 #######################################################################################################
 ##SET UP OPTIONS
 
-while getopts a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y: option
-do
-        case "${option}"
-        in
+##CHECK IF PARAMETER IS PASSED A CORRECT ARGUMENT OR THE NEXT PARAMETER DUE TO MISSING FILE NAME
+check_argument(){
+    # pass parameter and argument
+    if [[ "$2" = -* ]] 
+    then
+        echo "Missing argument for parameter -$1"
+        echo "$2 looks like another parameter and not the expected value. Please review help (run with -h) and do not use filenames starting with a '-' character"
+        exit 1
+    fi
+}
 
-                a) appl=${OPTARG};;
-                b) outfilebase=${OPTARG};;
-		B) badseq=${OPTARG};;
- 		c) disableprecalc=true ;;
-		C) cpus=${OPTARG};;
-                d) outdir=${OPTARG};;
-		D) db=${OPTARG};;
-		e) disresanno=true ;;
-                f) outformats=${OPTARG};;
-		F) iprsoutdir=${OPTARG};;
-                g) goterms=true ;;
-		h) help=true ;;
-		i) inputpath=${OPTARG};;
-		l) lookup=true ;;
-		m) minsize=${OPTARG};;
-		M) mapfile=${OPTARG};;
-		n) biocurator=${OPTARG};;
-		o) outfilename=${OPTARG};;
-		p) pathways=true ;;
-		r) mode=${OPTARG};;
-		R) crid=${OPTARG};;
-		t) seqtype=${OPTARG} ;;
-		T) tempdir=${OPTARG};;
-		v) version=true;;
-		x) taxon=${OPTARG};;
-		y) type=${OPTARG};;
-        esac
+
+## Exit if no params passed
+if [ "$#" == 0 ]
+then
+  echo "No parameters were passed"
+  echo "Please run with -h parameter to see help"
+  exit 1
+fi
+
+## Exit if illegal parameter passed
+if [[ "$@" != -* ]]
+then
+    echo "$@ looks like a illegal parameter. All parameters start with -"
+    echo "Please run with -h parameter to see help"
+    exit 1
+fi
+
+while getopts 'a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y:' option
+do
+  case "${option}" in
+    a) check_argument 'a' ${OPTARG}; appl=${OPTARG};;
+    b) check_argument 'b' ${OPTARG}; outfilebase=${OPTARG};;
+    B) check_argument 'B' ${OPTARG}; badseq=${OPTARG};;
+    c) disableprecalc=true;;
+    C) check_argument 'C' ${OPTARG}; cpus=${OPTARG};;
+    d) check_argument 'd' ${OPTARG}; outdir=${OPTARG};;
+    D) check_argument 'D' ${OPTARG}; db=${OPTARG};;
+    e) disresanno=true ;;
+    f) check_argument 'f' ${OPTARG}; outformats=${OPTARG};;
+    F) check_argument 'F' ${OPTARG}; iprsoutdir=${OPTARG};;
+    g) goterms=true;;
+    h) help=true;;
+    i) check_argument 'i' ${OPTARG}; inputpath=${OPTARG};;
+    l) lookup=true;;
+    m) check_argument 'm' ${OPTARG}; minsize=${OPTARG};;
+    M) check_argument 'M' ${OPTARG}; mapfile=${OPTARG};;
+    n) check_argument 'n' ${OPTARG}; biocurator=${OPTARG};;
+    o) check_argument 'o' ${OPTARG}; outfilename=${OPTARG};;
+    p) pathways=true;;
+    r) check_argument 'r' ${OPTARG}; mode=${OPTARG};;
+    R) check_argument 'R' ${OPTARG}; crid=${OPTARG};;
+    t) check_argument 't' ${OPTARG}; seqtype=${OPTARG};;
+    T) check_argument 'T' ${OPTARG}; tempdir=${OPTARG};;
+    v) version=true;;
+    x) check_argument 'x' ${OPTARG}; taxon=${OPTARG};;
+    y) check_argument 'y' ${OPTARG}; type=${OPTARG};;
+esac
 done
+
+
 #####################################################################################################
 if [[ "$help" = "true" ]] ; then
   echo "Options:
@@ -154,13 +182,16 @@ if [ -n "${tempdir}" ]; then ARGS="$ARGS -T $tempdir"; fi
 if [ -n "${cpus}" ]; then ARGS="$ARGS --cpu $cpus"; fi
 if [ -n "${mode}" ]; then ARGS="$ARGS --mode $mode"; fi
 if [ -n "${crid}" ]; then ARGS="$ARGS --crid $crid"; fi
-if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS -c"; fi
+if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS --disable-precalc"; fi
 if [[ "$disresanno" = "true" ]]; then ARGS="$ARGS -dra"; fi
 if [[ "$goterms" = "true" ]]; then ARGS="$ARGS -goterms"; fi
 if [[ "$help" = "true" ]]; then ARGS="$ARGS -help"; fi
 if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
+
+echo "Arguments for InterProScan: ${ARGS}"
+
 
 ######################################################################################################
 inname=$(basename "${inputpath}" .fasta) 

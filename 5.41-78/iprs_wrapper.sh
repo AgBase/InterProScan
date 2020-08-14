@@ -13,16 +13,22 @@ check_argument(){
     fi
 }
 
-##CHECK IF PARAMETER IS PASSED A CORRECT ARGUMENT OR THE NEXT PARAMETER DUE TO MISSING FILE NAME
-check_argument(){
-    # pass parameter and argument
-    if [[ "$2" = -* ]] 
-    then
-        echo "Missing argument for parameter -$1"
-        echo "$2 looks like another parameter and not the expected value. Please review help (run with -h) and do not use filenames starting with a '-' character"
-        exit 1
-    fi
-}
+
+## Exit if no params passed
+if [ "$#" == 0 ]
+then
+  echo "No parameters were passed"
+  echo "Please run with -h parameter to see help"
+  exit 1
+fi
+
+## Exit if illegal parameter passed
+if [[ "$@" != -* ]]
+then
+    echo "$@ looks like a illegal parameter. All parameters start with -"
+    echo "Please run with -h parameter to see help"
+    exit 1
+fi
 
 while getopts 'a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y:' option
 do
@@ -177,7 +183,7 @@ if [ -n "${tempdir}" ]; then ARGS="$ARGS -T $tempdir"; fi
 if [ -n "${cpus}" ]; then ARGS="$ARGS --cpu $cpus"; fi
 if [ -n "${mode}" ]; then ARGS="$ARGS --mode $mode"; fi
 if [ -n "${crid}" ]; then ARGS="$ARGS --crid $crid"; fi
-if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS -c"; fi
+if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS --disable-precalc"; fi
 if [[ "$disresanno" = "true" ]]; then ARGS="$ARGS -dra"; fi
 if [[ "$goterms" = "true" ]]; then ARGS="$ARGS -goterms"; fi
 if [[ "$help" = "true" ]]; then ARGS="$ARGS -help"; fi
@@ -185,7 +191,8 @@ if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
 if [[ "$version" = "true" ]]; then ARGS="$ARGS -version"; fi
 
-echo "Arguments for InterProScan: ${ARGS}\n\n"
+echo "Arguments for InterProScan: ${ARGS}"
+
 
 ######################################################################################################
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
