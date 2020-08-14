@@ -166,7 +166,7 @@ if [ -n "${tempdir}" ]; then ARGS="$ARGS -T $tempdir"; fi
 if [ -n "${cpus}" ]; then ARGS="$ARGS --cpu $cpus"; fi
 if [ -n "${mode}" ]; then ARGS="$ARGS --mode $mode"; fi
 if [ -n "${crid}" ]; then ARGS="$ARGS --crid $crid"; fi
-if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS -c"; fi
+if [[ "$disableprecalc" = "true" ]]; then ARGS="$ARGS --disable-precalc"; fi
 if [[ "$disresanno" = "true" ]]; then ARGS="$ARGS -dra"; fi
 if [[ "$goterms" = "true" ]]; then ARGS="$ARGS -goterms"; fi
 if [[ "$help" = "true" ]]; then ARGS="$ARGS -help"; fi
