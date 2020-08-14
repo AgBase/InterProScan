@@ -13,6 +13,12 @@ check_argument(){
     fi
 }
 
+if [ "$#" == 0 ]
+then
+  echo "No parameters were passed. Please run with -h parameter to see help"
+  exit 1
+fi
+
 while getopts 'a:b:B:cC:d:D:ef:F:ghi:lm:M:n:o:pr:R:t:T:vx:y:' option
 do
   case "${option}" in
