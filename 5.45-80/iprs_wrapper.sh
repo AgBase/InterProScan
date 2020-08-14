@@ -13,6 +13,8 @@ check_argument(){
     fi
 }
 
+
+## Exit if no params passed
 if [ "$#" == 0 ]
 then
   echo "No parameters were passed. Please run with -h parameter to see help"
