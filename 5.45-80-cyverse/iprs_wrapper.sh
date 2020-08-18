@@ -70,14 +70,14 @@ if [[ "$help" = "true" ]] ; then
  -a  <ANALYSES>			            Optional, comma separated list of analyses.  If this option
                                             is not set, ALL analyses will be run.
 
- -b, <OUTPUT-FILE-BASE>   		    Optional, base output filename (relative or absolute path).
+ -b <OUTPUT-FILE-BASE>   		    Optional, base output filename (relative or absolute path).
                                             Note that this option, the output directory (-d) option and
                                             the output file name (-o) option are mutually exclusive.  The
                                             appropriate file extension for the output format(s) will be
                                             appended automatically. By default the input file
                                             path/name will be used.
 
- -d,<OUTPUT-DIR>              		    Optional, output directory. Note that this option, the
+ -d <OUTPUT-DIR>              		    Optional, output directory. Note that this option, the
                                             output file name (-o) option and the output file base (-b) option
                                             are mutually exclusive. The output filename(s) are the
                                             same as the input filename, with the appropriate file
