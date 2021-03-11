@@ -4,5 +4,5 @@ Documentation for the version of InterProScan is hosted by ReadtheDocs: https://
 
 You can pull this image from docker hub with this command
 ```
-docker pull agbase/interproscan:5.41-78
+docker pull agbase/interproscan:5.45-80
 ```
