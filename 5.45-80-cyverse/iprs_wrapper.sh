@@ -226,11 +226,15 @@ find ./$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> $outdir
 find ./$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
 
 
-##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
-xmlhead=$(head -n 1 ./$outdir/query.0.xml)
+##REMOVE XML HEADERLINES TAILLINES AND CAT FILES TOGETHER
+xmlhead=$(head -n 1 $outdir/query.0.xml)
+xmltail=$(tail -1 $outdir/query.0.xml)
 find ./$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
+find ./$outdir  -type f -name "query.*.xml" -exec sed -i '$d' {} \;
 find ./$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> $outdir/tmp.xml
 echo -e "$xmlhead" | cat - $outdir/tmp.xml > $outdir/"$inname"'.xml'
+echo -e "$xmltail" >> $outdir/"$inname"'.xml'
+
 
 ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
 gff3head=$(head -n 3 ./$outdir/query.0.gff3)

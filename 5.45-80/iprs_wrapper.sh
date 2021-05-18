@@ -224,11 +224,14 @@ find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /da
 find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
 
 
-##REMOVE XML HEADERLINES AND CAT FILES TOGETHER
+##REMOVE XML HEADERLINES TAILLINES AND CAT FILES TOGETHER
 xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
+xmltail=$(tail -1 /data/$outdir/query.0.xml)
 find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '1d' {} \;
+find /data/$outdir  -type f -name "query.*.xml" -exec sed -i '$d' {} \;
 find /data/$outdir  -type f -name "query.*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
 echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
 
 
 ##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
