@@ -85,7 +85,8 @@ RUN apt-get install -y  \
         pkg-config      \
         python3         \
         bzip2           \
-	      libdw1          \
+        libdw1          \
+        libpcre3-dev    \
         nano            \
         ca-certificates && \
     apt-get clean && \
