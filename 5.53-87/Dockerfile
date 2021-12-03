@@ -45,7 +45,7 @@ RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blas
 
 ################## BASE IMAGE ######################
 
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
@@ -88,12 +88,28 @@ RUN apt-get install -y  \
         libdw1          \
         libpcre3-dev    \
         nano            \
+	wget		\
+	cmake		\
+	gfortran 	\
+        libgfortran5 	\
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 RUN java -version
+
+RUN cd /opt/ && \
+    wget https://github.com/sib-swiss/pftools3/archive/refs/tags/v3.2.11.tar.gz && \
+    tar -zxf v3.2.11.tar.gz && \
+    mkdir pftools3-3.2.11/build && \
+    cd pftools3-3.2.11/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/opt/interproscan/prosite/ -DCMAKE_BUILD_TYPE=Release -DUSE_GRAPHICS=OFF -DUSE_PDF=OFF -DUSE_AFFINITY=OFF && \
+    make && \
+    make install && \
+    make test && \
+    cd /opt/ && \
+    rm -rf v3.2.11.tar.gz pftools3-3.2.11
 
 # fix error java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
 
