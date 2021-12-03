@@ -92,6 +92,9 @@ RUN apt-get install -y  \
 	cmake		\
 	gfortran 	\
         libgfortran5 	\
+        zlib1g-dev 	\
+        libpng-dev 	\
+        libfile-slurp-perl \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
