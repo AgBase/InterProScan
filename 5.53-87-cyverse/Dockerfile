@@ -45,12 +45,12 @@ RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blas
 
 ################## BASE IMAGE ######################
 
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
 MAINTAINER Surya Saha <suryasaha@arizona.edu>
-LABEL  base_image="ubuntu:20.04" \
+LABEL  base_image="ubuntu:18.04" \
        software="interproscan" \
        software.version="5.53-87.0" \
        version="1" \
@@ -78,22 +78,45 @@ RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update
 
-RUN apt-get install -y  \
+RUN apt-get install -y  --no-install-recommends \
         parallel        \
         openjdk-11-jre  \
         build-essential \
         pkg-config      \
-        python3         \
         bzip2           \
         libdw1          \
-	libpcre3-dev    \
+        libpcre3-dev    \
         nano            \
+        wget            \
+        git             \
+        cmake           \
+        gfortran        \
+        libgfortran5    \
+        zlib1g-dev      \
+        libpng-dev      \
+        libfile-slurp-perl \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
 RUN java -version
+
+
+#DOWNLOAD AND COMPILE PFTOOLS 3.11.2 FROM GITHUB. Replace copies in /opt/interproscan/bin.
+RUN rm -r /opt/interproscan/bin/prosite/pfscan /opt/interproscan/bin/prosite/pfsearch /opt/interproscan/bin/prosite/pfscanV3 /opt/interproscan/bin/prosite/pfsearchV3 && \
+    cd /opt/interproscan/bin && \
+    wget https://github.com/sib-swiss/pftools3/archive/refs/tags/v3.2.11.tar.gz && \
+    tar -zxf v3.2.11.tar.gz && \
+    mkdir pftools3-3.2.11/build && \
+    cd /opt/interproscan/bin/pftools3-3.2.11/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/opt/interproscan/bin/prosite -DCMAKE_BUILD_TYPE=Release -DUSE_GRAPHICS=OFF -DUSE_PDF=OFF && \
+    make && \
+    make install && \
+    make test && \
+    cd /opt/interproscan/bin/ && \
+    rm -rf v3.2.11.tar.gz pftools3-3.2.11 && \
+    mv /opt/interproscan/bin/prosite/bin/* /opt/interproscan/bin/prosite/
 
 # fix error java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
 

@@ -91,8 +91,8 @@ if [[ "$help" = "true" ]] ; then
  -e               			    Optional, excludes sites from the XML, JSON output
 
  -f <OUTPUT-FORMATS>             	    Optional, case-insensitive, comma separated list of output
-                                            formats. Supported formats are TSV, XML, JSON, GFF3, HTML and
-                                            SVG. Default for protein sequences are TSV, XML and
+                                            formats. Supported formats are TSV, XML, JSON, and GFF3.
+                                            Default for protein sequences are TSV, XML and
                                             GFF3, or for nucleotide sequences GFF3 and XML.
 
  -g		                            Optional, switch on lookup of corresponding Gene Ontology
@@ -221,7 +221,7 @@ parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d $outdir $ARGS ::: ./
 
 
 ##MERGE SPLIT OUTPUTS
-##OUTPUT FORMATS--TSV, XML, JSON, GFF3, HTML and SVG
+##OUTPUT FORMATS--TSV, XML, JSON, GFF3
 find ./$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.tsv'
 find ./$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.json'
 
@@ -242,9 +242,6 @@ find ./$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
 find ./$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> $outdir/tmp.gff3
 echo -e "$gff3head" | cat - $outdir/tmp.gff3 > $outdir/"$inname"'.gff3'
 
-##CAT TOGETHER HTML AND SVG FILES
-find ./$outdir  -type f -name "query.*.html.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.html.tar.gz'
-find ./$outdir  -type f -name "query.*.svg.tar.gz" -print0 | xargs -0 cat -- >> $outdir/"$inname"'.svg.tar.gz'
 
 #REMOVE TEMPORARY FILES
 rm ./$outdir/query*
