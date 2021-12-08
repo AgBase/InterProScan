@@ -78,17 +78,17 @@ RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update
 
-RUN apt-get install -y  \
+RUN apt-get install -y  --no-install-recommends \
         parallel        \
         openjdk-11-jre  \
         build-essential \
         pkg-config      \
-        python3         \
         bzip2           \
         libdw1          \
         libpcre3-dev    \
         nano            \
 	wget		\
+	git		\
 	cmake		\
 	gfortran 	\
         libgfortran5 	\
@@ -102,17 +102,20 @@ RUN apt-get install -y  \
 
 RUN java -version
 
-RUN cd /opt/ && \
+#DOWNLOAD AND COMPILE PFTOOLS 3.11.2 FROM GITHUB. Replace copies in /opt/interproscan/bin.
+RUN rm -r /opt/interproscan/bin/prosite/pfscan /opt/interproscan/bin/prosite/pfsearch /opt/interproscan/bin/prosite/pfscanV3 /opt/interproscan/bin/prosite/pfsearchV3 && \
+    cd /opt/interproscan/bin && \
     wget https://github.com/sib-swiss/pftools3/archive/refs/tags/v3.2.11.tar.gz && \
     tar -zxf v3.2.11.tar.gz && \
     mkdir pftools3-3.2.11/build && \
-    cd pftools3-3.2.11/build && \
-    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/opt/interproscan/prosite/ -DCMAKE_BUILD_TYPE=Release -DUSE_GRAPHICS=OFF -DUSE_PDF=OFF -DUSE_AFFINITY=OFF && \
+    cd /opt/interproscan/bin/pftools3-3.2.11/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=/opt/interproscan/bin/prosite -DCMAKE_BUILD_TYPE=Release -DUSE_GRAPHICS=OFF -DUSE_PDF=OFF && \
     make && \
     make install && \
     make test && \
-    cd /opt/ && \
-    rm -rf v3.2.11.tar.gz pftools3-3.2.11
+    cd /opt/interproscan/bin/ && \
+    rm -rf v3.2.11.tar.gz pftools3-3.2.11 && \
+    mv /opt/interproscan/bin/prosite/bin/* /opt/interproscan/bin/prosite/
 
 # fix error java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
 
