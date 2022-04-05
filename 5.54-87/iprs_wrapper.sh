@@ -198,10 +198,10 @@ echo "Arguments for InterProScan: ${ARGS}"
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
 
 ##REMOVE BAD CHARACTERS * - _ . FROM SEQS
-# sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
-# sed -i 's/\-//g' /data/inputnostar.fasta 
-# sed -i  's/\_//g' /data/inputnostar.fasta
-# sed -i 's/\.//g' /data/inputnostar.fasta
+ sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
+ sed -i 's/\-//g' /data/inputnostar.fasta 
+ sed -i  's/\_//g' /data/inputnostar.fasta
+ sed -i 's/\.//g' /data/inputnostar.fasta
 while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE| sed -e 's/\*//g' -e 's/\-//g' -e 's/\_//g' -e 's/\.//g'; fi;  done < /data/$inputpath > /data/inputnostar.fasta
 
 
@@ -215,7 +215,7 @@ grep -c '^>' /data/split/query*
 ##RUN IPRS
 if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
 
-parallel -j 100% --joblog iprs.log --retry-failed /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query* 
+parallel -j 100% --joblog iprs.log --resume-failed /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query* 
 
 
 ##MERGE SPLIT OUTPUTS
@@ -254,8 +254,8 @@ if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
 if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
 
-echo "Parameters for cyverse_parse_ips_xml.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
-cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
+#echo "Parameters for parsexml_nopathinfo.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
+perl /usr/bin/parsexml_nopathinfo.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
 mv $inname'_acc_go_counts.txt' /data/$outdir
 mv $inname'_acc_interpro_counts.txt' /data/$outdir

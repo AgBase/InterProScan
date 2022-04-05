@@ -45,12 +45,12 @@ RUN cp /opt/ncbi-blast-2.9.0+/bin/rpsblast /opt/interproscan/bin/blast/ncbi-blas
 
 ################## BASE IMAGE ######################
 
-FROM ubuntu:18.04
+FROM ubuntu:focal-20220113
 
 MAINTAINER Jawon Song <jawon@tacc.utexas.edu>
 MAINTAINER Amanda Cooksey <amcooksey@arizona.edu>
 MAINTAINER Surya Saha <suryasaha@arizona.edu>
-LABEL  base_image="ubuntu:20.04" \
+LABEL  base_image="ubuntu:focal-20220113" \
        software="interproscan" \
        software.version="5.54-87.0" \
        version="1" \
@@ -78,7 +78,7 @@ RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:openjdk-r/ppa && \
     apt-get update
 
-RUN apt-get install -y  --no-install-recommends \
+RUN apt-get install -y  --no-install-recommends --fix-missing \
         parallel        \
         openjdk-11-jre  \
         build-essential \
@@ -90,10 +90,12 @@ RUN apt-get install -y  --no-install-recommends \
 	wget		\
 	git		\
 	cmake		\
-	gfortran 	\
-        libgfortran5 	\
-        zlib1g-dev 	\
-        libpng-dev 	\
+	gfortran        \
+	gcc             \
+	libdrm-dev	\	
+        libgfortran5    \
+        zlib1g-dev      \
+        libpng-dev      \
         libfile-slurp-perl \
 	locales \
         ca-certificates && \
@@ -101,7 +103,24 @@ RUN apt-get install -y  --no-install-recommends \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/*
 
-RUN locale-gen en_US.UTF-8
+#RUN locale-gen en_US.UTF-8
+# Set the locale
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8
+
+#INSTALL PERL FROM SOURCE AND SET MALLOC TO SYSTEM ALLOC
+WORKDIR /shared
+
+RUN wget http://www.cpan.org/src/5.0/perl-5.30.3.tar.gz && \
+    tar -xzf perl-5.30.3.tar.gz
+
+WORKDIR /shared/perl-5.30.3
+RUN ./Configure -des -Dprefix=/opt/perl-5.30.3/localperl -Uusemymalloc
+RUN make
+RUN make install
 
 #DOWNLOAD AND COMPILE PFTOOLS 3.11.2 FROM GITHUB. Replace copies in /opt/interproscan/bin.
 RUN rm -r /opt/interproscan/bin/prosite/pfscan /opt/interproscan/bin/prosite/pfsearch /opt/interproscan/bin/prosite/pfscanV3 /opt/interproscan/bin/prosite/pfsearchV3 && \
@@ -139,25 +158,19 @@ RUN /usr/bin/printf '\xfe\xed\xfe\xed\x00\x00\x00\x02\x00\x00\x00\x00\xe2\x68\x6
 # 2. Re-add all the CA certs into the previously empty file.
 RUN /var/lib/dpkg/info/ca-certificates-java.postinst configure
 
-#ADD log4j.properties /
-
-ADD apache-log4j-2.17.1-bin /usr/local
-RUN export CLASSPATH=$CLASSPATH:/usr/local/apache-log4j-2.17.1/log4j-2.17.1.jar
-RUN export PATH=$PATH:/usr/local/apache-log4j-2.17.1/
-
-#ENV CLASSPATH=/opt/interproscan/lib/log4j-1.2.17.jar:/opt/interproscan/lib/log4j-api-2.17.1.jar:/opt/interproscan/lib/log4j-core-2.17.1.jar:/log4j.properties:${CLASSPATH}
-
 WORKDIR /opt/interproscan
 
 RUN python3 initial_setup.py
 
 ENV PATH=$PATH:/opt/interproscan/bin
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 
 ADD interproscan.properties /opt/interproscan
 ADD splitfasta.pl /usr/bin
 ADD iprs_wrapper.sh /usr/bin
-ADD cyverse_parse_ips_xml.pl /usr/bin
+ADD parsexml_nopathinfo.pl /usr/bin
 
+RUN chmod a+rwx /usr/bin/parsexml_nopathinfo.pl
 
 ENTRYPOINT ["/bin/bash", "iprs_wrapper.sh"]
 ##################### INSTALLATION END #####################
