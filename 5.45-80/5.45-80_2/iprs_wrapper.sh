@@ -218,7 +218,7 @@ grep -c '^>' /data/split/query*
 ##RUN IPRS
 if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
 
-parallel -j 100% /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query*
+parallel -j 100% --joblog iprs.log /opt/interproscan/interproscan.sh -i {} -d /data/$outdir $ARGS ::: /data/split/query*
 
 
 ##MERGE SPLIT OUTPUTS
