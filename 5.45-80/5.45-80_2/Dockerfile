@@ -87,6 +87,7 @@ RUN apt-get install -y  \
         bzip2           \
 	      libdw1          \
         nano            \
+        locales     \
         ca-certificates && \
     apt-get clean && \
     apt-get purge && \
@@ -99,6 +100,15 @@ RUN java -version
 # 1. Save an empty JKS file with the default 'changeit' password for Java cacerts.
 #    Use 'printf' instead of 'echo' for Dockerfile RUN compatibility.
 RUN /usr/bin/printf '\xfe\xed\xfe\xed\x00\x00\x00\x02\x00\x00\x00\x00\xe2\x68\x6e\x45\xfb\x43\xdf\xa4\xd9\x92\xdd\x41\xce\xb6\xb2\x1c\x63\x30\xd7\x92' > /etc/ssl/certs/java/cacerts
+
+
+#RUN locale-gen en_US.UTF-8
+# Set the locale
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8  
+ENV LANGUAGE en_US:en  
+ENV LC_ALL en_US.UTF-8
 
 # 2. Re-add all the CA certs into the previously empty file.
 RUN /var/lib/dpkg/info/ca-certificates-java.postinst configure
