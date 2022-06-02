@@ -198,10 +198,6 @@ echo "Arguments for InterProScan: ${ARGS}"
 inname=$(basename ${inputpath}| awk -F"." '{print $1}') ## does not assume any fixed extension
 
 ##REMOVE BAD CHARACTERS * - _ . FROM SEQS
-# sed 's/\*//g' /data/$inputpath > /data/inputnostar.fasta
-# sed -i 's/\-//g' /data/inputnostar.fasta 
-# sed -i  's/\_//g' /data/inputnostar.fasta
-# sed -i 's/\.//g' /data/inputnostar.fasta
 
 grep -E "(^>|A|R|N|O|B|C|E|Q|C|G|H|I|L|K|M|F|P|S|T|W|Y|V)" /data/$inputpath > /data/inputnostar.fasta
 awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' /data/inputnostar.fasta > /data/output.fasta
@@ -237,9 +233,19 @@ echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
 echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
 
 
-##REMOVE GFF# HEADERLINES AND CAT FILES TOGETHER
+##REMOVE GFF# HEADERLINES AND FASTA LINES AND CAT FILES TOGETHER
 gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
 find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
+ls /data/$outdir/*.gff3 > list.tmp
+readarray -d ' ' gffarray < list.tmp
+for g in "${gffarray[@]}"
+do
+	fanum=($(egrep -n -m 1 '##FASTA' query.*.gff3))
+	fanum=($(echo $fanum | sed 's/:##FASTA//'))
+	fanum=$((fanum-1))
+	head -n $fanum query.*.gff3 > query.*.gff3.tmp
+	mv query.*.gff3.tmp query.*.gff3
+done
 find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
 
@@ -278,4 +284,4 @@ mv $inname'_pathway_counts.txt' /data/$outdir
 rm -r /data/split
 rm /data/inputnostar.fasta
 rm -r temp
-
+rm -r *.tmp
