@@ -236,17 +236,20 @@ echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
 ##REMOVE GFF# HEADERLINES AND FASTA LINES AND CAT FILES TOGETHER
 gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
 find /data/$outdir  -type f -name "query.*.gff3" -exec sed -i '1,3d' {} \;
+
 ls /data/$outdir/*.gff3 > list.tmp
-readarray -d ' ' gffarray < list.tmp
+readarray  -t gffarray < list.tmp
+
 for g in "${gffarray[@]}"
 do
-	fanum=($(egrep -n -m 1 '##FASTA' query.*.gff3))
-	fanum=($(echo $fanum | sed 's/:##FASTA//'))
-	fanum=$((fanum-1))
-	head -n $fanum query.*.gff3 > query.*.gff3.tmp
-	mv query.*.gff3.tmp query.*.gff3
+  	fanum=($(egrep -n -m 1 '##FASTA' $g))
+        fanum=($(echo $fanum | sed 's/:\#\#FASTA//')) 
+        fanum=$((fanum-1))
+        head -n $fanum $g > "$g".tmp
+        mv "$g".tmp $g
 done
 find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
+echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'find /data/$outdir  -type f -name "query.*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
 
 
