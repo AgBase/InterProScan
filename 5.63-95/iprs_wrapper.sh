@@ -268,8 +268,8 @@ if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
 if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
 
-#echo "Parameters for cyverse_parse_ips_xml.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
-cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
+#echo "Parameters for parsexml_nopathinfo.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
+parsexml_nopathinfo.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
 
 #MAKE OUTPUT GAF FILE AND ADD HEADER LINES
 currentdate=$(date)
