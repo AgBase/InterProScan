@@ -613,7 +613,7 @@ sub generate_gaf_output($$$$$) {
                  $with_from .= "InterPro:$interpro_id";
             }
          }
-         print $gaf_fh "$db\t$db_object_id\t$db_object_id\t\t$go_id\tGO_REF:0000002\tECO:0000501\t$with_from\t$aspect\t$db_object_name\t\t$obj_type\ttaxon:$taxon\t$date\t$assigned\t\t\n";
+         print $gaf_fh "$db\t$db_object_id\t$db_object_id\t\t$go_id\tGO_REF:0000002\tIEA\t$with_from\t$aspect\t$db_object_name\t\t$obj_type\ttaxon:$taxon\t$date\t$assigned\t\t\n";
    } # foreach go_ids
 } # foreach acc
 close $gaf_fh;
