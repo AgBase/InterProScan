@@ -131,9 +131,10 @@ ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 ADD splitfasta.pl /usr/bin
 ADD iprs_wrapper.sh /usr/bin
-ADD parsexml_nopathinfo.pl /usr/bin
+ADD GO0032991_and_children.json /usr/
+ADD cyverse_parse_ips_xml.pl /usr/bin
 
-RUN chmod a+rwx /usr/bin/parsexml_nopathinfo.pl
+RUN chmod a+rwx /usr/bin/cyverse_parse_ips_xml.pl
 
 ENTRYPOINT ["/bin/bash", "iprs_wrapper.sh"]
 ##################### INSTALLATION END #####################

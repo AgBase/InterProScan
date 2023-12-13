@@ -166,7 +166,7 @@ OPTIONS FOR XML PARSER OUTPUTS
 -y <type>				Transcript or protein
 -n <biocurator>				Name of the biocurator who made these annotations
 -M <mapping file>			Optional. Mapping file.
--B <bad seq file>			Optional. Bad input sequence file." 				
+-B <bad seq file>			Optional. Bad input sequence file."
   exit 0
 fi
 #####################################################################################################
@@ -221,7 +221,7 @@ parallel -j 100% --joblog iprs.log /opt/interproscan/interproscan.sh -i {} -d /d
 ##MERGE SPLIT OUTPUTS
 ##ASSUMING OUTPUT FORMATS--TSV, XML, JSON, GFF3
 find /data/$outdir  -type f -name "query.*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
-if test -f *.json
+if [[ -f *.json ]]
 then
 	find /data/$outdir  -type f -name "query.*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
 fi
@@ -245,7 +245,7 @@ readarray  -t gffarray < list.tmp
 
 for g in "${gffarray[@]}"
 do
-  	fanum=($(egrep -n -m 1 '##FASTA' $g))
+        fanum=($(egrep -n -m 1 '##FASTA' $g))
         fanum=($(echo $fanum | sed 's/:\#\#FASTA//'))
         fanum=$((fanum-1))
         head -n $fanum $g > "$g".tmp
@@ -268,8 +268,34 @@ if [ -n "${biocurator}" ]; then outgaf15="$biocurator"; else outgaf15="user"; fi
 if [ -n "${taxon}" ]; then outgaf13="$taxon"; else outgaf13="0000"; fi
 
 
-#echo "Parameters for parsexml_nopathinfo.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
-parsexml_nopathinfo.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12 
+echo "Parameters for cyverse_parse_ips_xml.pl: -f /data/${outdir} -d ${outgaf1} -t ${outgaf13} -n ${outgaf15} -y ${outgaf12}"
+cyverse_parse_ips_xml.pl -f /data/$outdir -d $outgaf1 -t $outgaf13 -n $outgaf15 -y $outgaf12
+
+#NEED TO ADD QUALIFIER COLUMN
+awk 'BEGIN {FS = "\t"}{OFS = "!"}{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17}' $inname'_gaf.txt' > addqual.tmp
+cat addqual.tmp | while IFS="!" read -r db id symbol qual goacc pmid evid empty aspect name sym prot tax date assdb empty2 empty3
+touch addqual2.tmp
+do
+        if [[ $aspect == P ]];
+                then
+                col4="involved_in"
+                echo -e "$db\t$id\t$symbol\t$col4\t$goacc\t$pmid\t$evid\t$empty\t$aspect\t$name\t$sym\t$prot\t$tax\t$date\t$assdb\t$empty2\t$empty3" >> addqual2.tmp
+        elif [[ $aspect == F ]];
+                then
+                col4="enables"
+                echo -e "$db\t$id\t$symbol\t$col4\t$goacc\t$pmid\t$evid\t$empty\t$aspect\t$name\t$sym\t$prot\t$tax\t$date\t$assdb\t$empty2\t$empty3" >> addqual2.tmp
+        elif [[ $aspect == C ]] && grep -q $goacc '/usr/GO0032991_and_children.json';
+                then
+                col4="part_of"
+                echo -e "$db\t$id\t$symbol\t$col4\t$goacc\t$pmid\t$evid\t$empty\t$aspect\t$name\t$sym\t$prot\t$tax\t$date\t$assdb\t$empty2\t$empty3" >> addqual2.tmp
+        elif [[ $aspect == C ]] && grep -v -q $goacc '/usr/GO0032991_and_children.json';
+                then
+                col4="located_in"
+                echo -e "$db\t$id\t$symbol\t$col4\t$goacc\t$pmid\t$evid\t$empty\t$aspect\t$name\t$sym\t$prot\t$tax\t$date\t$assdb\t$empty2\t$empty3" >> addqual2.tmp
+        else
+		break
+	fi
+done
 
 #MAKE OUTPUT GAF FILE AND ADD HEADER LINES
 currentdate=$(date)
@@ -278,7 +304,8 @@ echo -e "!gaf-version: 2.2
 !generated-by: AgBase
 
 Database\tDB_Object_ID\tDB_Object_Symbol\tQualifier\tGO_ID\tDB_Reference\tEvidence_Code\tWith_From\tAspect\tDB_Object_Name\tDB_Object_Synonyms\tDB_Object_Type\tTaxon\tDate\tAssigned_By\tAnnotation_Extension\tGene_Product_Form_Id
-$(cat $inname'_gaf.txt')" > $inname'_gaf.txt'
+$(cat addqual2.tmp)" > $inname'_gaf.txt'
+
 
 #mv $inname'_acc_go_counts.txt' /data/$outdir
 #mv $inname'_acc_interpro_counts.txt' /data/$outdir
@@ -295,3 +322,5 @@ rm /data/inputnostar.fasta
 rm -r temp
 rm -r *.tmp
 rm output.fasta
+rm addqual*
+
