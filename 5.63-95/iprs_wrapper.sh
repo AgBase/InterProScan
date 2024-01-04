@@ -322,5 +322,4 @@ rm /data/inputnostar.fasta
 rm -r temp
 rm -r *.tmp
 rm output.fasta
-rm addqual*
 
