@@ -577,7 +577,7 @@ sub generate_gaf_output($$$$$) {
   $output_gaf_file = $oname . '_gaf.txt';
 
   open($gaf_fh, ">$output_gaf_file") || die "Cannot open $output_gaf_file for writing.\n";
-  print $gaf_fh "Database\tDB_Object_ID\tDB_Object_Symbol\tQualifier\tGO_ID\tDB_Reference\tEvidence_Code\tWith_From\tAspect\tDB_Object_Name\tDB_Object_Synonyms\tDB_Object_Type\tTaxon\tDate\tAssigned_By\tAnnotation_Extension\tGene_Product_Form_Id\n";
+#  print $gaf_fh "Database\tDB_Object_ID\tDB_Object_Symbol\tQualifier\tGO_ID\tDB_Reference\tEvidence_Code\tWith_From\tAspect\tDB_Object_Name\tDB_Object_Synonyms\tDB_Object_Type\tTaxon\tDate\tAssigned_By\tAnnotation_Extension\tGene_Product_Form_Id\n";
 
   foreach my $acc (sort keys %acc_go) {
      if ($acc eq '0' || $acc eq '') { next; }
@@ -612,7 +612,7 @@ sub generate_gaf_output($$$$$) {
                  $with_from .= "InterPro:$interpro_id";
             }
          }
-         print $gaf_fh "$db\t$db_object_id\t$db_object_id\t\t$go_id\tGO_REF:0000002\tECO:0000501\t$with_from\t$aspect\t$db_object_name\t\t$obj_type\ttaxon:$taxon\t$date\t$assigned\t\t\n";
+         print $gaf_fh "$db\t$db_object_id\t$db_object_id\t\t$go_id\tGO_REF:0000002\tIEA\t$with_from\t$aspect\t$db_object_name\t\t$obj_type\ttaxon:$taxon\t$date\t$assigned\t\t\n";
    } # foreach go_ids
 } # foreach acc
 close $gaf_fh;
