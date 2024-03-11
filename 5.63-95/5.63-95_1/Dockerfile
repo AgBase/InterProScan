@@ -29,7 +29,7 @@ RUN  tar -pxvzf interproscan-core-$IPRSCAN.tar.gz \
     && rm -f interproscan-core-$IPRSCAN.tar.gz interproscan-core-$IPRSCAN.tar.gz.md5
 
 
-RUN wget -O /opt/ncbi-blast-2.14.0+-x64-linux.tar.gz https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.14.0/ncbi-blast-2.14.0+-x64-linux.tar.gz
+RUN wget -O /opt/ncbi-blast-2.14.0+-x64-linux.tar.gz ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.14.0/ncbi-blast-2.14.0+-x64-linux.tar.gz
 RUN tar xvf ncbi-blast-2.14.0+-x64-linux.tar.gz
 
 
