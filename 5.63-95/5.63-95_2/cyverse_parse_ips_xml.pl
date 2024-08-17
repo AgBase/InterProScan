@@ -100,11 +100,10 @@ sub parse_xml($$$) {
   
   $err_file = $output_file . '.err';
   open($err_fh,">$err_file");
-  open(INFILE, "<$opt_f\/$input_file")
+  open(INFILE, "<$opt_f\/$input_file");
   while (<INFILE>){
-    my $line;
-    $line = $_;
-    next unless $results =~ m/(\<protein\>|\<xref|\<entry|\<go-xref|\<pathway-xref|\<\/protein\>)/;
+    my $line = $_;
+    next unless $line =~ m/(\<protein\>|\<xref|\<entry|\<go-xref|\<pathway-xref|\<\/protein\>)/;
     $line =~ s/\'/\\\'/g; 
      if ($line =~ m/\s*<protein>/) {
          $xref_id = $interpro_id = '';
