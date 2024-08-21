@@ -114,50 +114,6 @@ RUN ./Configure -des -Dprefix=/opt/perl-5.30.3/localperl -Uusemymalloc
 RUN make
 RUN make install
 
-#INSTALL DBM::DEEP MODULE
-#RUN apt-get install -y  --no-install-recommends --fix-missing \
-#    cpanm \
-#    perl-App-cpanminus \
-#    perl-Config-Tiny
-
-WORKDIR /shared
-
-RUN wget https://cpan.metacpan.org/authors/id/M/MI/MIYAGAWA/App-cpanminus-1.7047.tar.gz && \
-    wget https://cpan.metacpan.org/authors/id/R/RJ/RJBS/Test-Deep-1.204.tar.gz && \
-    wget https://cpan.metacpan.org/authors/id/E/EX/EXODIST/Test-Exception-0.43.tar.gz && \
-    wget https://cpan.metacpan.org/authors/id/D/DA/DAGOLDEN/Sub-Uplevel-0.2800.tar.gz && \
-    tar -xvzf App-cpanminus-1.7047.tar.gz && \
-    tar -xvzf Test-Deep-1.204.tar.gz && \
-    tar -xvzf Test-Exception-0.43.tar.gz && \
-    tar -xvzf Sub-Uplevel-0.2800.tar.gz
-
-WORKDIR /shared/Test-Deep-1.204
-RUN perl Makefile.PL
-RUN make
-RUN make test
-RUN make install
-
-WORKDIR /shared/Sub-Uplevel-0.2800
-RUN perl Makefile.PL
-RUN make
-RUN make test
-RUN make install
-
-WORKDIR /shared/Test-Exception-0.43
-RUN perl Makefile.PL
-RUN make
-RUN make test
-RUN make install
-
-WORKDIR /shared/App-cpanminus-1.7047
-RUN perl Makefile.PL
-RUN make
-RUN make test
-RUN make install
-
-
-RUN cpanm install DBM::Deep
-
 # fix error java.security.InvalidAlgorithmParameterException: the trustAnchors parameter must be non-empty
 
 # 1. Save an empty JKS file with the default 'changeit' password for Java cacerts.
@@ -176,9 +132,9 @@ ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ADD splitfasta.pl /usr/bin
 ADD iprs_wrapper.sh /usr/bin
 ADD GO0032991_and_children.json /usr/
-ADD cyverse_parse_ips_xml.pl /usr/bin
+ADD parse_interproscan_xml.pl /usr/bin
 
-RUN chmod a+rwx /usr/bin/cyverse_parse_ips_xml.pl
+RUN chmod a+rwx /usr/bin/parse_interproscan_xml.pl
 
 ENTRYPOINT ["/bin/bash", "iprs_wrapper.sh"]
 ##################### INSTALLATION END #####################
