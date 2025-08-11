@@ -193,13 +193,7 @@ echo "Arguments for InterProScan: ${ARGS}"
 
 ######################################################################################################
 
-#echo "outdir is:" $outdir
-#echo "outfilebase is:" $outfilebase
-#echo "inname is:" $inname
-#echo "innopath is:" $innopath
-
 ##REMOVE BAD CHARACTERS * - _ . FROM SEQS
-
 grep -E "(^>|A|R|N|O|B|C|E|Q|C|G|H|I|L|K|M|F|P|S|T|W|Y|V)" /data/$inputpath > /data/inputnostar.fasta
 awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' /data/inputnostar.fasta > /data/output.fasta
 while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE| sed -e 's/\*//g' -e 's/\-//g' -e 's/\_//g' -e 's/\.//g'; fi;  done < /data/output.fasta > /data/inputnostar.fasta
@@ -222,9 +216,6 @@ parallel -j 100% --joblog iprs.log /opt/interproscan/interproscan.sh -i {} $ARGS
 
 outcount=$(find /data/$outdir/ -type f -name 'query*xml'  2>/dev/null | wc -l)
 
-#echo "outcount is:" $outcount
-#echo "splits is:" $splits
-
 if [ "$outcount" -ge "$splits" ]
 then
 	##MERGE SPLIT OUTPUTS
@@ -232,24 +223,20 @@ then
 	if [[ -f query.tsv ]]
 	then
 		find /data/$outdir  -type f -name "query*tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..tsv' -print0 | xargs -0 rm
 		rm query*tsv
 	elif [[ -f query.0.tsv ]]
 	then
 		find /data/$outdir  -type f -name "query*tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..tsv' -print0 | xargs -0 rm
 		rm query*tsv
 	fi
 
 	if [[ -f query.json ]]
 	then
 		find /data/$outdir  -type f -name "$query*json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..json' -print0 | xargs -0 rm
 		rm query*json
 	elif [[ -f query.0.json ]]
 	then
 		find /data/$outdir  -type f -name "$query*json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..json' -print0 | xargs -0 rm
 		rm  query*json
 	fi
 
@@ -263,7 +250,6 @@ then
 		find /data/$outdir  -type f -name "query*xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
 		echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
 		echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..xml' -print0 | xargs -0 rm
 		rm query*xml
 	elif [[ -f query.0.xml ]]
 	then
@@ -274,7 +260,6 @@ then
 		find /data/$outdir  -type f -name "query*xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
 		echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
 		echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..xml' -print0 | xargs -0 rm
 		rm query*xml
 	fi
 
@@ -296,7 +281,6 @@ then
 		done
 		find /data/$outdir  -type f -name "query*gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 		echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..gff3' -print0 | xargs -0 rm
 		rm query*gff3
 	elif [[ -f query.0.gff3 ]]
 	then
@@ -315,7 +299,6 @@ then
 		done
 		find /data/$outdir  -type f -name "query*gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 		echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
-		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..gff3' -print0 | xargs -0 rm
 		rm query*gff3
 	fi
 
