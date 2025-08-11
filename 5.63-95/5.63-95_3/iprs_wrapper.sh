@@ -167,7 +167,6 @@ ARGS=''
 
 #IF STATEMENTS EXIST FOR EACH OPTIONAL PARAMETER
 if [ -n "${appl}" ]; then ARGS="$ARGS -appl $appl"; fi
-if [ -n "${outfilebase}" ]; then ARGS="$ARGS -b $outfilebase"; fi
 if [ -n "${outdir}" ]; then ARGS="$ARGS -d $outdir"; fi
 if [ -n "${outformats}" ]; then ARGS="$ARGS -f $outformats"; fi
 if [ -n "${minsize}" ]; then ARGS="$ARGS -ms $minsize"; fi
@@ -184,18 +183,20 @@ if [[ "$lookup" = "true" ]]; then ARGS="$ARGS -iprlookup"; fi
 if [[ "$pathways" = "true" ]]; then ARGS="$ARGS -pa"; fi
 if [[ "$verbose" = "true" ]]; then ARGS="$ARGS -verbose"; fi
 
+if [[ -n "${outdir}"  ]]; then innopath=$(basename ${inputpath}) && inname="${innopath%.*}";  fi
+if [[ -n "${outfilebase}" ]]; then outdir=""; fi
+if [[ -n "${outfilebase}" ]]; then inname="$outfilebase" && outfilebase="query" ; fi
+#THIS LINE WOULD BE ABOVE IN 'ARGS' BUT SINCE I NEED TO RESET IT TO 'QUERY' FIRST IT IS HERE
+if [ -n "${outfilebase}" ]; then ARGS="$ARGS -b $outfilebase"; fi
+
 echo "Arguments for InterProScan: ${ARGS}"
 
 ######################################################################################################
-#if [[ -n "${outdir}"  ]]; then inname=$(basename ${inputpath}| awk -F"." '{print $1}'); fi ## does not assume any fixed extension DROPS THE VERSION OF GCF...
-if [[ -n "${outdir}"  ]]; then inname=$(basename ${inputpath}); fi
 
-if [[ -n "${outfilebase}" ]]; then outdir=""; fi
-if [[ -n "${outfilebase}" ]]; then inname="$outfilebase"; fi
-
-echo "outdir is:" $outdir
-echo "outfilebase is:" $outfilebase
-echo "inname is:" $inname
+#echo "outdir is:" $outdir
+#echo "outfilebase is:" $outfilebase
+#echo "inname is:" $inname
+#echo "innopath is:" $innopath
 
 ##REMOVE BAD CHARACTERS * - _ . FROM SEQS
 
@@ -205,49 +206,83 @@ while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE
 
 
 ##SPLIT FASTA INTO BLOCKS OF 1000
-/usr/bin/splitfasta.pl -f /data/inputnostar.fasta -s $inname -o /data/split -r 1000
+/usr/bin/splitfasta.pl -f /data/inputnostar.fasta -s query -o /data/split -r 1000
 
 ##PRINT NUMBER OF SEQS IN EACH SPLIT
 echo "Number of sequences in each split fasta file"
-grep -c '^>' /data/split/$inname*
+grep -c '^>' /data/split/query*
 
 ##GETS THE NUMBER OF SPLIT FILES FOR USE BELOW
-splits=$(find /data/split -type f -name $inname.*  2>/dev/null | wc -l)
+splits=$(find /data/split -type f -name query.*  2>/dev/null | wc -l)
 
 ##RUN IPRS
 if [ ! -d /data/$outdir ]; then mkdir /data/$outdir; fi
 
-parallel -j 100% --joblog iprs.log /opt/interproscan/interproscan.sh -i {} $ARGS ::: /data/split/$inname*
+parallel -j 100% --joblog iprs.log /opt/interproscan/interproscan.sh -i {} $ARGS ::: /data/split/query*
 
-outcount=$(find /data/$outdir/ -type f -name $inname_*.xml  2>/dev/null | wc -l)
+outcount=$(find /data/$outdir/ -type f -name 'query*xml'  2>/dev/null | wc -l)
+
+#echo "outcount is:" $outcount
+#echo "splits is:" $splits
+
 if [ "$outcount" -ge "$splits" ]
 then
 	##MERGE SPLIT OUTPUTS
 	##ASSUMING OUTPUT FORMATS--TSV, XML, JSON, GFF3
-	if [[ -f $inname_*.tsv ]]
+	if [[ -f query.tsv ]]
 	then
-		find /data/$outdir  -type f -name "$inname_*.tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
+		find /data/$outdir  -type f -name "query*tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..tsv' -print0 | xargs -0 rm
+		rm query*tsv
+	elif [[ -f query.0.tsv ]]
+	then
+		find /data/$outdir  -type f -name "query*tsv" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.tsv'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..tsv' -print0 | xargs -0 rm
+		rm query*tsv
 	fi
-	if [[ -f *.json ]]
+
+	if [[ -f query.json ]]
 	then
-		find /data/$outdir  -type f -name "$inname_*.json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
+		find /data/$outdir  -type f -name "$query*json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..json' -print0 | xargs -0 rm
+		rm query*json
+	elif [[ -f query.0.json ]]
+	then
+		find /data/$outdir  -type f -name "$query*json" -print0 | xargs -0 cat -- >> /data/$outdir/"$inname"'.json'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..json' -print0 | xargs -0 rm
+		rm  query*json
 	fi
 
 	##REMOVE XML HEADERLINES TAILLINES AND CAT FILES TOGETHER
-	xmlhead=$(head -n 1 /data/$outdir/"$inname"_1.xml)
-	xmltail=$(tail -1 /data/$outdir/"$inname"_1.xml)
-	find /data/$outdir  -type f -name "$inname_*.xml" -exec sed -i '1d' {} \;
-	find /data/$outdir  -type f -name "$inname_*.xml" -exec sed -i '$d' {} \;
-	find /data/$outdir  -type f -name "$inname_*.xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
-	echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
-	echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
-
+	if [[ -f query.xml ]]
+	then
+		xmlhead=$(head -n 1 /data/$outdir/query.xml)
+		xmltail=$(tail -1 /data/$outdir/query.xml)
+		find /data/$outdir  -type f -name "query*xml" -exec sed -i '1d' {} \;
+		find /data/$outdir  -type f -name "query*xml" -exec sed -i '$d' {} \;
+		find /data/$outdir  -type f -name "query*xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
+		echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+		echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..xml' -print0 | xargs -0 rm
+		rm query*xml
+	elif [[ -f query.0.xml ]]
+	then
+		xmlhead=$(head -n 1 /data/$outdir/query.0.xml)
+		xmltail=$(tail -1 /data/$outdir/query.0.xml)
+		find /data/$outdir  -type f -name "query*xml" -exec sed -i '1d' {} \;
+		find /data/$outdir  -type f -name "query*xml" -exec sed -i '$d' {} \;
+		find /data/$outdir  -type f -name "query*xml" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.xml
+		echo -e "$xmlhead" | cat - /data/$outdir/tmp.xml > /data/$outdir/"$inname"'.xml'
+		echo -e "$xmltail" >>  /data/$outdir/"$inname"'.xml'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..xml' -print0 | xargs -0 rm
+		rm query*xml
+	fi
 
 	##REMOVE GFF# HEADERLINES AND FASTA LINES AND CAT FILES TOGETHER
-	if [[ -f *.gff3 ]]
+	if [[ -f query.gff3 ]]
 	then
-		gff3head=$(head -n 3 /data/$outdir/"$inname"_1.gff3)
-		find /data/$outdir  -type f -name "$inname_*.gff3" -exec sed -i '1,3d' {} \;
+		gff3head=$(head -n 3 /data/$outdir/query.gff3)
+		find /data/$outdir  -type f -name "query*gff3" -exec sed -i '1,3d' {} \;
 		ls /data/$outdir/*.gff3 > list.tmp
 		readarray  -t gffarray < list.tmp
 
@@ -259,12 +294,32 @@ then
 	        	head -n $fanum $g > "$g".tmp
 	        	mv "$g".tmp $g
 		done
-		find /data/$outdir  -type f -name "$inname_*.gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
+		find /data/$outdir  -type f -name "query*gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
 		echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..gff3' -print0 | xargs -0 rm
+		rm query*gff3
+	elif [[ -f query.0.gff3 ]]
+	then
+		gff3head=$(head -n 3 /data/$outdir/query.0.gff3)
+		find /data/$outdir  -type f -name "query*gff3" -exec sed -i '1,3d' {} \;
+		ls /data/$outdir/*.gff3 > list.tmp
+		readarray  -t gffarray < list.tmp
+
+		for g in "${gffarray[@]}"
+		do
+	        	fanum=($(egrep -n -m 1 '##FASTA' $g))
+	        	fanum=($(echo $fanum | sed 's/:\#\#FASTA//'))
+	        	fanum=$((fanum-1))
+	        	head -n $fanum $g > "$g".tmp
+	        	mv "$g".tmp $g
+		done
+		find /data/$outdir  -type f -name "query*gff3" -print0 | xargs -0 cat -- >> /data/$outdir/tmp.gff3
+		echo -e "$gff3head" | cat - /data/$outdir/tmp.gff3 > /data/$outdir/"$inname"'.gff3'
+		#find . -type f -regextype posix-extended -regex /data/$outdir/query'[._][0-9]+\..gff3' -print0 | xargs -0 rm
+		rm query*gff3
 	fi
 
 	#REMOVE TEMPORARY FILES
-	find . -type f -regextype posix-extended -regex /data/$outdir/$inname'[._][0-9]+\..*' -print0 | xargs -0 rm
 	rm /data/$outdir/tmp*
 fi
 
@@ -317,9 +372,9 @@ $(cat addqual2.tmp)" > $inname'_gaf.txt'
 
 
 ##REMOVE TEMP FILES
-#rm -r /data/split
-#rm /data/inputnostar.fasta
-#rm -r temp
-#rm -r *.tmp
-#rm output.fasta
+rm -r /data/split
+rm /data/inputnostar.fasta
+rm -r temp
+rm -r *.tmp
+rm output.fasta
 
