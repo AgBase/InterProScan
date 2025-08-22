@@ -18,20 +18,20 @@ Results and analysis from the application of InterProScan annotation to the Offi
 
 .. NOTE::
 
-    This tool accepts a peptide FASTA file. For those users with nucloetide sequences some documentation has been provided for using **TransDecoder** (although other tools are also acceptable). 
+    This tool accepts a peptide FASTA file. For those users with nucloetide sequences some documentation has been provided for using **TransDecoder** (although other tools are also acceptable).
     The `TransDecoder app <https://de.cyverse.org/de/?type=apps&app-id=74828a18-f351-11e8-be2b-008cfa5ae621&system-id=de>`_ is available through CyVerse or as a `BioContainer <https://quay.io/repository/biocontainers/transdecoder?tab=tags>`_ for use on the command line.
 
-.. NOTE:: 
+.. NOTE::
 
     As both GOanna and InterProScan provide GO annotations, their outputs are provided in GAF format. The **'Combine GAFs'** tool can then be used to make a single GAF of GO annotations, if desired.
 
 **Where to Find InterProScan**
 ==============================
 
-`Docker Hub (5.63-95) <https://hub.docker.com/r/agbase/interproscan>`_
+`Docker Hub (5.75-106) <https://hub.docker.com/r/agbase/interproscan>`_
 
 `CyVerse (5.36-75) <https://de.cyverse.org/de/?type=apps&app-id=Interproscan-5.36.75u2&system-id=agave>`_
-    
+
 
 .. _iprsusage:
 
@@ -89,14 +89,6 @@ Results and analysis from the application of InterProScan annotation to the Offi
                                             short value it might be that the analysis takes a very long
                                             time!
 
- -o <EXPLICIT_OUTPUT_FILENAME>              Optional explicit output file name (relative or absolute
-                                            path).  Note that this option, the output directory -d option
-                                            and the output file basename -b option are mutually
-                                            exclusive. If this option is given, you MUST specify a
-                                            single output format using the -f option.  The output file
-                                            name will not be modified. Note that specifying an output
-                                            file name using this option OVERWRITES ANY EXISTING FILE.
-
  -p                                         Optional, switch on lookup of corresponding Pathway
                                             annotation (IMPLIES -l lookup option)
  -t <SEQUENCE-TYPE>                         Optional, the type of the input sequences (dna/rna (n)
@@ -106,7 +98,7 @@ Results and analysis from the application of InterProScan annotation to the Offi
                                             absolute path). The default location is temp/.
 
  -v                                         Optional, display version number
- 
+
  -r                                          Optional. 'Mode' required ( -r 'cluster') to run in cluster mode. These options
                                             are provided but have not been tested with this wrapper script. For
                                             more information on running InterProScan in cluster mode:
@@ -146,14 +138,14 @@ Available InterProScan analyses:
 **InterProScan on the Command Line**
 ============================================
 
-**Getting the InterProScan Data (now including PANTHER)** 
+**Getting the InterProScan Data (now including PANTHER)**
 ==========================================================
 .. code-block:: bash
 
-    wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.63-95.0/alt/interproscan-data-5.63-95.0.tar.gz
-    wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.63-95.0/alt/interproscan-data-5.63-95.0.tar.gz.md5
-    md5sum -c interproscan-data-5.63-95.0.tar.gz.md
-    tar -pxvzf interproscan-data-5.63-95.0.tar.gz
+    wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.75-106.0/alt/interproscan-data-5.75-106.0.tar.gz
+    wget ftp://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.75-106.0/alt/interproscan-data-5.75-106.0.tar.gz.md5
+    md5sum -c interproscan-data-5.75-106.0.tar.gz.md
+    tar -pxvzf interproscan-data-5.75-106.0.tar.gz
 
 .. admonition:: tar options
 
@@ -170,7 +162,7 @@ Interproscan is provided as a Docker container.
 
 A container is a standard unit of software that packages up code and all its dependencies so the application runs quickly and reliably from one computing environment to another.
 
-There are two major containerization technologies: **Docker** and **Singularity (also known as Apptainer**.
+There are two major containerization technologies: **Docker** and **Apptainer**.
 
 Docker containers can be run with either technology.
 
@@ -181,14 +173,14 @@ Docker containers can be run with either technology.
 
     - Docker must be installed on the computer you wish to use for your analysis.
     - To run Docker you must have ‘root’ permissions (or use sudo).
-    - Docker will run all containers as ‘root’. This makes Docker incompatible with HPC systems (see Singularity below).
+    - Docker will run all containers as ‘root’. This makes Docker incompatible with HPC systems (see Apptainer below).
     - Docker can be run on your local computer, a server, a cloud virtual machine etc.
     - For more information on installing Docker on other systems see this tutorial:  `Installing Docker on your machine <https://docs.docker.com/engine/install/>`_.
 
 
 .. Important::
 
-    We have included this basic documentation for running InterProScan with Docker. However, InterProScan requires quite a lot of compute resources and may need to be run on an HPC system. If you need to use HPC see 'Singularity' below.
+    We have included this basic documentation for running InterProScan with Docker. However, InterProScan requires quite a lot of compute resources and may need to be run on an HPC system. If you need to use HPC see 'Apptainer' below.
 
 
 
@@ -201,13 +193,13 @@ The latest container can be pulled with this command:
 
 .. code-block:: bash
 
-    docker pull agbase/interproscan:5.63-95
+    docker pull agbase/interproscan:5.75-106
 
 .. admonition:: Remember
 
     You must have root permissions or use sudo, like so:
 
-    sudo docker pull agbase/interproscan:5.63-95
+    sudo docker pull agbase/interproscan:5.75-106
 
 
 
@@ -224,7 +216,7 @@ The latest container can be pulled with this command:
 
 .. code-block:: bash
 
-    sudo docker run --rm -v $(pwd):/work-dir agbase/interproscan:5.63-95 -h
+    sudo docker run --rm -v $(pwd):/work-dir agbase/interproscan:5.75-106 -h
 
 See :ref:`iprsusage`
 
@@ -236,8 +228,8 @@ See :ref:`iprsusage`
 
     sudo docker run \
     -v /your/local/data/directory:/data \
-    -v /where/you/downloaded/interproscan/data/interproscan-5.63-95.0/data:/opt/interproscan/data \
-    agbase/interproscan:5.63-95 \
+    -v /where/you/downloaded/interproscan/data/interproscan-5.75-106.0/data:/opt/interproscan/data \
+    agbase/interproscan:5.75-106 \
     -i /path/to/your/input/file/pnnl_10000.fasta \
     -d outdir_10000 \
     -f tsv,json,xml,gff3 \
@@ -258,9 +250,9 @@ See :ref:`iprsusage`
 
 **-v /your/local/data/directory:/data:** mount my working directory on the host machine into the /data directory in the container. The syntax for this is <absolute path on host machine>:<absolute path in container>
 
-**-v /where/you/downloaded/interproscan/data/interproscan-5.64-95.0/data:/opt/interproscan/data:** mounts the InterProScan partner data (downloaded from FTP) on the host machine into the /opt/interproscan/data directory in the container
+**-v /where/you/downloaded/interproscan/data/interproscan-5.75-106.0/data:/opt/interproscan/data:** mounts the InterProScan partner data (downloaded from FTP) on the host machine into the /opt/interproscan/data directory in the container
 
-**agbase/interproscan:5.63-95:** the name of the Docker image to use
+**agbase/interproscan:5.75-106:** the name of the Docker image to use
 
 .. tip::
 
@@ -275,10 +267,10 @@ See :ref:`iprsusage`
 **-f tsv,json,xml,gff3:** desired output file formats
 
 
-**-g:** tells the tool to perform GO annotation 
+**-g:** tells the tool to perform GO annotation
 
 
-**-p:** tells tool to perform pathway annotaion
+**-p:** tells tool to perform pathway annotation
 
 **-c:** tells tool to perform local compute and not connect to EBI. This only adds a little to the run time but removes error messages from network time out errors
 
@@ -305,7 +297,7 @@ See :ref:`iprsusage`
 """"""""""""""""""
 **<basename>_gaf.txt:**
 -This table follows the formatting of a gene association file (gaf) and can be used in GO enrichment analyses.
- 
+
 **<basename>_acc_go_counts.txt:**
 -This table includes input accessions, the number of GO IDs assigned to each accession and GO ID names. GO IDs are split into BP (Biological Process), MF (Molecular Function) and CC (Cellular Component).
 
@@ -316,7 +308,7 @@ See :ref:`iprsusage`
 -This table includes input accessions, number of InterPro IDs for each accession, InterPro IDs assigned to each sequence and the InterPro ID name.
 
 **<basename>_interpro_counts.txt:**
--This table counts the numbers of sequences assigned to each InterPro ID so that the user can quickly identify all genes with a particular motif. 
+-This table counts the numbers of sequences assigned to each InterPro ID so that the user can quickly identify all genes with a particular motif.
 
 **<basename>_acc_pathway_counts.txt:**
 -This table includes input accessions, number of pathway IDs for the accession and the pathway names. Multiple values are separated by a semi-colon.
@@ -330,21 +322,21 @@ See :ref:`iprsusage`
 If you see more files in your output folder there may have been an error in the analysis or there may have been no GO to transfer. `Contact us <agbase@email.arizona.edu>`_.
 
 
-**Running InterProScan with Singularity (or Apptainer) on HPC**
+**Running InterProScan with Apptainer on HPC**
 ===============================================================
-.. admonition:: About Singularity
+.. admonition:: About Apptainer
 
     - does not require ‘root’ permissions
     - runs all containers as the user that is logged into the host machine
-    - HPC systems are likely to have Singularity (or Apptainer) installed and are unlikely to object if asked to install it (no guarantees).
+    - HPC systems are likely to have Apptainer installed and are unlikely to object if asked to install it (no guarantees).
     - can be run on any machine where is is installed
-    - more information about `Singularity <https://apptainer.org/user-docs/3.8/>`_ and `Apptainer <https://apptainer.org/docs/user/latest/>`_
-    - This tool was tested using SingularityCE 3.11.4
+    - more information about `Apptainer <https://apptainer.org/user-docs/3.8/>`_ and `Apptainer <https://apptainer.org/docs/user/latest/>`_
+    - This tool was tested using Apptainer 3.11.4
 
 
 .. admonition:: HPC Job Schedulers
 
-    Although Singularity can be installed on any computer this documentation assumes it will be run on an HPC system. The tool was tested on a SLURM system and the job submission scripts below reflect that. Submission scripts will need to be modified for use with other job scheduler systems.
+    Although Apptainer can be installed on any computer this documentation assumes it will be run on an HPC system. The tool was tested on a SLURM system and the job submission scripts below reflect that. Submission scripts will need to be modified for use with other job scheduler systems.
 
 
 
@@ -359,7 +351,7 @@ The container can be pulled with this command:
 
 .. code-block:: bash
 
-    singularity pull docker://agbase/interproscan:5.63-95
+    apptainer pull docker://agbase/interproscan:5.75.106
 
 
 
@@ -376,14 +368,14 @@ The container can be pulled with this command:
     #SBATCH --nodes=1
     #SBATCH --mem=0
     #SBATCH --time=48:00:00
-    #SBATCH --partition=short
+    #SBATCH --partition=ceres
     #SBATCH --account=nal_genomics
 
 
-    module load singularityCE
+    module load apptainer
 
-    singularity run \
-    interproscan_5.63-95.sif \
+    apptainer run \
+    interproscan_5.75-106.sif \
     -h
 
 See :ref:`iprsusage`
@@ -395,7 +387,7 @@ See :ref:`iprsusage`
 .. tip::
 
     There is one directory built into this container. This directory should be used to mount your working directory.
-    
+
     - /data
 
 **Example SLURM Script**
@@ -409,15 +401,15 @@ See :ref:`iprsusage`
     #SBATCH --nodes=1
     #SBATCH --mem=0
     #SBATCH --time=48:00:00
-    #SBATCH --partition=short
+    #SBATCH --partition=ceres
     #SBATCH --account=nal_genomics
 
-    module load singularityCE
+    module load apptainer
 
-    singularity run \
+    apptainer run \
     -B /your/local/data/directory:/data \
-    -B /where/you/downloaded/interproscan/data/interproscan-5.63-85.0/data:/opt/interproscan/data \
-    interproscan_5.63-95.sif \
+    -B /where/you/downloaded/interproscan/data/interproscan-5.75-106.0/data:/opt/interproscan/data \
+    interproscan_5.75-106.sif \
     -i /your/local/data/directory/pnnl_10000.fasta \
     -d outdir_10000 \
     -f tsv,json,xml,gff3 \
@@ -428,17 +420,17 @@ See :ref:`iprsusage`
     -x 109069 \
     -D database \
     -l
-    
+
 **Command Explained**
 """"""""""""""""""""""""
 
-**singularity run:** tells Singularity to run
+**apptainer run:** tells Apptainer to run
 
 **-B /your/local/data/directory:/data:** mounts my working directory on the host machine into the /data directory in the container the syntax for this is <aboslute path on host machine>:<aboslute path in container>
 
-**-B /where/you/downloaded/interproscan/data/interproscan-5.63-95.0/data:/opt/interproscan/data:** mounts he InterProScan data directory that was downloaded from the FTP site into the InterProScan data directory in the container
+**-B /where/you/downloaded/interproscan/data/interproscan-5.75-106.0/data:/opt/interproscan/data:** mounts he InterProScan data directory that was downloaded from the FTP site into the InterProScan data directory in the container
 
-**interproscan_5.63-95.sif:** name of the image to use
+**interproscan_5.75-106.sif:** name of the image to use
 
 .. tip::
 
@@ -453,7 +445,7 @@ See :ref:`iprsusage`
 **-f tsv,json,xml,gff3:** desired output file formats
 
 
-**-g:** tells the tool to perform GO annotation 
+**-g:** tells the tool to perform GO annotation
 
 
 **-c:** tells tool to perform local compute and not connect to EBI. This only adds a little to the run time but removes error messages from network time out errors
@@ -485,7 +477,7 @@ See :ref:`iprsusage`
 """"""""""""""""""
 **<basename>_gaf.txt:**
 -This table follows the formatting of a gene association file (gaf) and can be used in GO enrichment analyses.
- 
+
 **<basename>_acc_go_counts.txt:**
 -This table includes input accessions, the number of GO IDs assigned to each accession and GO ID names. GO IDs are split into BP (Biological Process), MF (Molecular Function) and CC (Cellular Component).
 
@@ -496,7 +488,7 @@ See :ref:`iprsusage`
 -This table includes input accessions, number of InterPro IDs for each accession, InterPro IDs assigned to each sequence and the InterPro ID name.
 
 **<basename>_interpro_counts.txt:**
--This table counts the numbers of sequences assigned to each InterPro ID so that the user can quickly identify all genes with a particular motif. 
+-This table counts the numbers of sequences assigned to each InterPro ID so that the user can quickly identify all genes with a particular motif.
 
 **<basename>_acc_pathway_counts.txt:**
 -This table includes input accessions, number of pathway IDs for the accession and the pathway names. Multiple values are separated by a semi-colon.
@@ -560,7 +552,7 @@ See :ref:`iprsusage`
 **Command Explained**
 """"""""""""""""""""""""
 
-**-i AROS_10.faa:** local path to input FASTA file. 
+**-i AROS_10.faa:** local path to input FASTA file.
 
 
 **-d outdir:** output directory name
@@ -569,7 +561,7 @@ See :ref:`iprsusage`
 **-f tsv,json,xml,html,gff3,svg:** desired output file formats
 
 
-**-g:** tells the tool to perform GO annotation 
+**-g:** tells the tool to perform GO annotation
 
 
 **-p:** tells tool to perform pathway annoation
@@ -602,7 +594,7 @@ See :ref:`iprsusage`
 """"""""""""""""""
 **<basename>_gaf.txt:**
 -This table follows the formatting of a gene association file (gaf) and can be used in GO enrichment analyses.
- 
+
 **<basename>_acc_go_counts.txt:**
 -This table includes input accessions, the number of GO IDs assigned to each accession and GO ID names. GO IDs are split into BP (Biological Process), MF (Molecular Function) and CC (Cellular Component).
 
@@ -613,7 +605,7 @@ See :ref:`iprsusage`
 -This table includes input accessions, number of InterPro IDs for each accession, InterPro IDs assigned to each sequence and the InterPro ID name.
 
 **<basename>_interpro_counts.txt:**
--This table counts the numbers of sequences assigned to each InterPro ID so that the user can quickly identify all genes with a particular motif. 
+-This table counts the numbers of sequences assigned to each InterPro ID so that the user can quickly identify all genes with a particular motif.
 
 **<basename>_acc_pathway_counts.txt:**
 -This table includes input accessions, number of pathway IDs for the accession and the pathway names. Multiple values are separated by a semi-colon.
@@ -662,7 +654,7 @@ This is where your results will be placed. The default (recommended) is your 'an
 **Retain Inputs:**
 Enabling this flag will copy all the input files into the analysis result folder. 
 
-.. WARNING:: 
+.. WARNING::
 
     Selecting this option will rapidly consume your allocated space. It is not recommended. Your inputs will always remain available in the folder in which you stored them.
 
@@ -689,15 +681,15 @@ Enabling this flag will copy all the input files into the analysis result folder
 
 **Understanding Your Results**
 ==============================
-**InterProScan Outputs** 
+**InterProScan Outputs**
 ------------------------
-This app provides all six of the InterProScan output formats. For more details on the contents of each file please refer to the InterProScan `outputs documentation <https://github.com/ebi-pf-team/interproscan/wiki/OutputFormats>`_. 
+This app provides all six of the InterProScan output formats. For more details on the contents of each file please refer to the InterProScan `outputs documentation <https://github.com/ebi-pf-team/interproscan/wiki/OutputFormats>`_.
 
-**<basename>.gff3** 
+**<basename>.gff3**
 
-**<basename>.tsv** 
+**<basename>.tsv**
 
-**<basename>.xml** 
+**<basename>.xml**
 
 **<basename>.json**
 
