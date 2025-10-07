@@ -205,6 +205,20 @@ The latest container can be pulled with this command:
 
 **Running InterProScan with Data**
 ----------------------------------
+The first time you run a new version of InterproScan you may need to index the hmm files in the data:
+
+.. code-block:: bash
+
+    sudo docker run --rm -it -v /path/to/Interproscan_dir/data:/opt/interproscan/data agbase/interproscan:5.75-106
+
+This will launch the container interactively (you are operating inside the container). Once inside:
+
+.. code-block:: bash
+    cd /opt/interproscan
+    python3 setup.py -f interproscan.properties
+
+When the command finishes you can use 'exit' to get out of the container.
+
 .. tip::
 
     There is one directory built into this container. This directory should be used to mount your working directory.
@@ -383,6 +397,19 @@ See :ref:`iprsusage`
 
 **Running InterProScan with Data**
 ----------------------------------
+The first time you run a new version of InterproScan you may need to index the hmm files in the data. On HPC you will need to carry out this process on an interactive node.:
+
+.. code-block:: bash
+
+    apptainer shell -B /path/to/Interproscan_dir/data:/opt/interproscan/data interproscan_5.75-106.sif
+
+This will launch the container interactively (you are operating inside the container). Once inside: 
+
+.. code-block:: bash
+    cd /opt/interproscan
+    python3 setup.py -f interproscan.properties
+
+When the command finishes you can use 'exit' to get out of the container.
 
 .. tip::
 
