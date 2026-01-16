@@ -203,11 +203,12 @@ echo "Arguments for InterProScan: ${ARGS}"
 if [ ! -d "${outdir}" ]; then mkdir -p $outdir; fi
 chmod -R a+rwx $outdir
 
+##ONLY KEEP LINES WITH ONE OF THESE CHARACTERS
+grep -E "(^>|A|R|N|O|B|C|E|Q|C|G|H|I|L|K|M|F|P|S|T|W|Y|V)" $inputpath > $outdir/noempty.fasta
+##REMOVE EMPTY SEQUENCES
+awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' $outdir/noempty.fasta > $outdir/inputnostar.fasta
 ##REMOVE BAD CHARACTERS * - _ . FROM SEQS
-grep -E "(^>|A|R|N|O|B|C|E|Q|C|G|H|I|L|K|M|F|P|S|T|W|Y|V)" $inputpath > $outdir/inputnostar.fasta
-awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} $2 {print ">"$0}' $outdir/inputnostar.fasta > $outdir/output.fasta
-while read LINE; do if echo $LINE| grep -q '>'; then echo $LINE; else echo $LINE| sed -e 's/\*//g' -e 's/\-//g' -e 's/\_//g' -e 's/\.//g'; fi;  done < $outdir/output.fasta > $outdir/inputnostar.fasta
-
+sed -i '/^>/! s/[-.*_ ]//g' $outdir/inputnostar.fasta
 
 ##SPLIT FASTA INTO BLOCKS OF 1000
 /usr/bin/splitfasta.pl -f $outdir/inputnostar.fasta -s query -o $outdir/split -r 1000
@@ -387,7 +388,7 @@ rm -r $outdir/split
 rm $outdir/inputnostar.fasta
 rm -r $outdir/temp
 rm -r $outdir/*.tmp
-rm $outdir/output.fasta
+rm $outdir/noempty.fasta
 
 
 
