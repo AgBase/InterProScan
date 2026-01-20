@@ -389,6 +389,6 @@ rm $outdir/inputnostar.fasta
 rm -r $outdir/temp
 rm -r $outdir/*.tmp
 rm $outdir/noempty.fasta
-
+rm $outdir/*.obo
 
 
