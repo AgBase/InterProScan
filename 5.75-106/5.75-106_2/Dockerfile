@@ -137,6 +137,17 @@ RUN wget https://github.com/shenwei356/taxonkit/releases/download/v0.20.0/taxonk
     tar -xvzf taxonkit_linux_amd64.tar.gz && \
     rm taxonkit_linux_amd64.tar.gz
     
+RUN mkdir -p /opt/taxonkit_data
+
+WORKDIR /opt/taxonkit_data
+
+RUN wget ftp://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz && \
+    tar -xvzf taxdump.tar.gz && \
+    rm taxdump.tar.gz
+
+ENV TAXONKIT_DB=/opt/taxonkit_data
+
+WORKDIR /
 
 #ADD interproscan.properties /opt/interproscan/
 ADD splitfasta.pl /usr/bin
