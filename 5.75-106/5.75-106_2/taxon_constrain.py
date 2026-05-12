@@ -26,7 +26,7 @@ pd.set_option('display.max_columns', None)
 #USE LINEAGE ARRAY TO CREATE LIST
 lin = lineage.split(sep=",")
 #CREATE DATAFRAME FROM GAF FILE
-gaf_df = pd.read_table(f"{gaf}", dtype=str)
+gaf_df = pd.read_table(f"{gaf}", dtype=str, comment='!', header=None)
 #CREATE DATAFRAME FROM OBO FILE
 stanzas = []
 current_stanza = None
